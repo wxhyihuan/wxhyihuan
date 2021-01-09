@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>RStudio on Wxh yihuan</title>
+    <link>https://wxhyihuan.netlify.app/tags/rstudio/</link>
+    <description>Recent content in RStudio on Wxh yihuan</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 18 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://wxhyihuan.netlify.app/tags/rstudio/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>blogtest</title>
+      <link>https://wxhyihuan.netlify.app/post/2020/11/18/keras-with-r/</link>
+      <pubDate>Wed, 18 Nov 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://wxhyihuan.netlify.app/post/2020/11/18/keras-with-r/</guid>
+      <description>Keras机器学习的基础概览基本的图像分类回归文字分类使用tfhub中的学习模型过拟合和欠拟合保存和恢复模型Keras机器学习的基础概览本课程包括关于使用Keras进行机器学习的基本概念的教程。
+图像分类：使用fashingmist数据集进行图像分类。
+回归：使用波士顿住房数据集进行回归。
+文本分类：使用IMDB数据集进行文本分类。
+过拟合和不拟合：学习ML中的这些重要概念。
+保存和恢复：学习如何保存和恢复TensorFlow模型。
+基本的图像分类在本指南中，我们将训练一个神经网络模型来分类服装图像，如运动鞋和衬衫。如果您不理解所有的细节也没关系，这是一个完整的Keras程序的快速概述，详细信息将随我们的进展而解释。
+library(tensorflow)library(keras)导入Fashion MNIST数据集fashion_mnist &amp;lt;- dataset_fashion_mnist()本指南使用Fashion MNIST数据集，包含10个类别的7万张灰度图像。这些图片以低分辨率(28x28像素)展示了衣个别服，如下图所示:
+Figure 1: Fashion MNIST 样品(Zalando, MIT License)Fashion MNIST的目的是替代经典的MNIST数据集，后者通常被用作计算机视觉机器学习程序的“Hello, World”。MNIST数据集包含手写数字(0、1、2等)的图像，其格式与我们将在这里使用的衣物数据相同。
+本指南使用Fashion MNIST进行各种各样的操作，因为这是一个比常规MNIST更具挑战性的问题。这两个数据集都相对较小，用于验证算法是否如预期的那样工作。它们是测试和调试代码的良好起点。
+我们将使用60,000张图像来训练网络，并使用10,000张图像来评估网络学习分类图像的准确性。你可以直接从Keras访问Fashion MNIST。
+fashion_mnist &amp;lt;- dataset_fashion_mnist()c(train_images, train_labels) %&amp;lt;-% fashion_mnist$trainc(test_images, test_labels) %&amp;lt;-% fashion_mnist$test现在我们有四个数组: train_images和train_labels数组是训练集——即模型用来学习的数据。模型根据测试集进行测试的测试数据:test_images和test_labels。</description>
+    </item>
+    
+  </channel>
+</rss>

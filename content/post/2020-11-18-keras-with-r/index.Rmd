@@ -1,5 +1,5 @@
 ---
-title: Keras机器学习(1)-Keras基础
+title: blogtest
 author: wxhyihuan
 date: '2020-11-18'
 slug: keras-with-r
@@ -17,6 +17,7 @@ tags:
   - RStudio
   - R
 ---
+
 
 ## Keras机器学习的基础
 

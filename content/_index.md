@@ -9,19 +9,4 @@ This Hugo theme was ported from [Ivy](https://github.com/dmulholland/ivy), a min
 
 All pages not under the root directory of the website are listed below. You can also visit the list page of a single section, e.g., [posts](/post/), or [notes](/note/).
 
-```r
-#include <iostream>
 
-int main(int argc, char *argv[]) {
-
-  /* An annoying "Hello World" example */
-  for (auto i = 0; i < 0xFFFF; i++)
-    cout << "Hello, World!" << endl;
-
-  char c = '\n';
-  unordered_map <string, vector<string> > m;
-  m["key"] = "\\\\"; // this is an error
-
-  return -2e3 + 12l;
-}
-```
