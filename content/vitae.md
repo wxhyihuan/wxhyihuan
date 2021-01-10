@@ -1,5 +1,5 @@
 ---
-title: 简历
+title: Vitae
 author: wxhyihuan
 date: '2020-10-10'
 slug: mycv
