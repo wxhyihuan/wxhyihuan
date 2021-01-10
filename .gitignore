@@ -7,7 +7,6 @@ blogdown
 .DS_Store
 Thumbs.db
 config.yaml
-content
 index.Rmd
 layouts
 netlify.toml

@@ -1,0 +1,187 @@
+---
+title: MetataxoOPUtool
+author: wxhyihuan
+date: '2021-01-02'
+slug: metataxooputool
+categories:
+  - OPU
+  - Metataxo
+tags:
+  - R
+  - Bioinformatics
+  - 16s
+  - OPU
+---
+
+
+
+<p>这个脚本主要是用来对系统发生树构建OPU操作的，但脚本功能还没完全，一些处理和功能还需修缮。</p>
+<p>关于OPU的概念和处理操作可以参考下面一些资料：</p>
+<ol style="list-style-type: decimal">
+<li><p>Meng, X., Lu, S., Yang, J., Jin, D., Wang, X., &amp; Bai, X., et al. (2017). <a href="https://pubmed.ncbi.nlm.nih.gov/28223683/">Metataxonomics reveal vultures as a reservoir for clostridium perfringens</a>. Emerging Microbes &amp; Infections, 6(2), e9.</p></li>
+<li><p><a href="https://www.arb-silva.de/">Silva Database</a></p></li>
+</ol>
+<pre class="r"><code>
+library(&quot;ape&quot;)
+library(&quot;tidyverse&quot;)
+
+#MNp4nj &lt;- read.tree(&quot;p4_NJ_copy.tree&quot;)
+MNp4nj &lt;- read.tree(&quot;p4nj_sub_exract1.tree&quot;)
+
+distval &lt;- dist.nodes(MNp4nj)
+distval[1:5, 1:5]
+
+o &lt;- plot(MNp4nj)
+plot(MNp4nj, show.tip.label = F, x.lim = o$x.lim)
+tiplabels(MNp4nj$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label)], grep(&quot;Otu*&quot;, MNp4nj$tip.label), adj = 0, col = &quot;red&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 3, cex = 0.8)
+tiplabels(MNp4nj$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T)], grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T), adj = 0, col = &quot;black&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 1, cex = 0.8)
+
+OPUnummark &lt;- 1
+OPUmark &lt;- &quot;OPU_&quot;
+NodeOPU &lt;- paste(OPUmark, OPUnummark, sep = &quot;&quot;)
+
+MNp4nj$tip.label[MNp4nj$edge[,][which(MNp4nj$edge[, 1] == 112),]]
+
+
+## 每个Otu序列所在的节点和节点路径
+otu_tip_id &lt;- grep(&quot;Otu*&quot;, MNp4nj$tip.label)
+otutip_nodepath &lt;- nodepath(MNp4nj)[otu_tip_id]
+## 获取指定节点（191）下的所有tips label
+test1 &lt;- extract.clade(MNp4nj, 191)
+## 获取Otu tip所在的上级节点
+otutips_secondlevel_node &lt;- lapply(otutip_nodepath, function(el) {
+  el[length(el) - 1]
+})
+
+
+
+library(&quot;ape&quot;)
+library(&quot;tidyverse&quot;)
+
+#MNp4nj &lt;- read.tree(&quot;p4_NJ_copy.tree&quot;)
+MNp4nj &lt;- read.tree(&quot;p4nj_sub_exract1.tree&quot;)
+
+MNp4nj2 &lt;- read.tree(&quot;p4nj_sub_exract3.ntree&quot;)
+## 每个Otu序列所在的节点和节点路径
+otu_tip_id &lt;- grep(&quot;Otu*&quot;, MNp4nj$tip.label)
+otutip_nodepath &lt;- nodepath(MNp4nj2)[otu_tip_id]
+## 获取指定节点（191）下的所有tips label
+test1 &lt;- extract.clade(MNpMNp4nj24nj, 191)
+## 获取Otu tip所在的上级节点
+otutips_secondlevel_node &lt;- lapply(otutip_nodepath, function(el) {
+  el[length(el) - 1]
+})
+
+o2 &lt;- plot(MNp4nj2)
+plot(MNp4nj2, show.tip.label = F, x.lim = o2$x.lim)
+tiplabels(MNp4nj2$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label)], grep(&quot;Otu*&quot;, MNp4nj$tip.label), adj = 0, col = &quot;red&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 3, cex = 0.8)
+tiplabels(MNp4nj2$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T)], grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T), adj = 0, col = &quot;black&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 1, cex = 0.8)
+nodelabels(node = c(unlist(otutips_secondlevel_node)), pch = 21, bg = &quot;black&quot;, cex = 1)
+nodelabels(MNp4nj2$node.label, adj = c(0.5), col = &quot;black&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 1, cex = 0.8)
+
+taxo_name_decidor &lt;- function(consensus_linegae, unculted = FALSE) {
+  levels_mark &lt;- c(&quot;bacteria&quot;, &quot;phylum&quot;, &quot;class&quot;, &quot;order&quot;, &quot;family&quot;, &quot;genus&quot;, &quot;species&quot;)
+  #unclasified &lt;- &quot;Uncult&quot;
+  consensus_linegae_level &lt;- length(consensus_linegae)
+
+  suffix &lt;- ifelse(consensus_linegae_level &lt; length(levels_mark),
+    ifelse(unculted == TRUE,
+      str_c(&quot;uncult&quot;, levels_mark[consensus_linegae_level], consensus_linegae[consensus_linegae_level], sep = &quot;_&quot;),
+      str_c(levels_mark[consensus_linegae_level], consensus_linegae[consensus_linegae_level], sep = &quot;_&quot;)),
+      consensus_linegae[consensus_linegae_level])
+  return(suffix)
+}
+
+NodeOPU_namer &lt;- function(prefix = &quot;OPU&quot;, OPUnummark = &quot; &quot;, suffix = &quot; &quot;) {
+  NodeOPU_nam &lt;- str_c(prefix = &quot;OPU&quot;, OPUnummark, suffix, sep = &quot;_&quot;)
+  NodeOPU_nam &lt;- str_replace(NodeOPU_nam, &quot; &quot;, &quot;_&quot;)
+  return(NodeOPU_nam)
+}
+
+OPUnummark &lt;- 0
+Node_OPU_Names &lt;- c()
+
+for (ele in unlist(otutips_secondlevel_node)) {
+  uncult_mark &lt;- FALSE
+  temp_node_tipslabel_lineage &lt;- c() #用来临时记录某节点在的分类的 Lineage
+  OPUnummark &lt;- OPUnummark + 1
+  OPUnummarkstr &lt;- ifelse(OPUnummark &lt;= 9, paste(&quot;00&quot;, OPUnummark, sep = &quot;&quot;), ifelse(OPUnummark &lt;= 99, paste(&quot;0&quot;, OPUnummark, sep = &quot;&quot;), OPUnummark))
+
+  tmptre &lt;- extract.clade(MNp4nj2, ele, root.edge = 0, collapse.singles = TRUE, interactive = FALSE)
+  #cat(&quot;Node no. has :\n&quot;, paste(tmptre$tip.label, sep = &quot;\n&quot;), &quot;\n&quot;)
+  for (tip in tmptre$tip.label) {
+    tmptiptax &lt;- NULL
+    len &lt;- NULL
+    if (str_detect(tip, &quot;Unclassified&quot;)) {
+      tmptiptax &lt;- str_split(tip, &quot;___&quot;, simplify = TRUE)
+      len &lt;- length(tmptiptax)
+      lineage &lt;- str_split(tip, &quot;___&quot;, simplify = TRUE)[len]
+      #cat(lineage, &quot;\n&quot;)
+      uncult_mark &lt;- TRUE
+      temp_node_tipslabel_lineage &lt;- c(temp_node_tipslabel_lineage, lineage)
+    } else {
+      tmptiptax &lt;- str_split(tip, &quot;__&quot;, simplify = TRUE)
+      len &lt;- length(tmptiptax)
+      #last_levelname &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[2]
+      #cat(tmptiptax,&quot;\n&quot;)
+      if (len &gt; 2) {
+        if (str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[3] != &quot;Unclassified&quot;) {
+          last_levelname &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[2]
+          last_levelname &lt;- str_replace(last_levelname, &quot;_&quot;, &quot; &quot;)
+          lineage &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[len]
+          lineage &lt;- str_c(lineage, last_levelname)
+          #uncult_mark &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[2]
+          uncult_mark &lt;- FALSE
+          temp_node_tipslabel_lineage &lt;- c(temp_node_tipslabel_lineage, lineage)
+        } else {
+          #last_levelname &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[2]
+          #last_levelname &lt;- str_replace(last_levelname, &quot;_&quot;, &quot; &quot;)
+          lineage &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[len]
+          uncult_mark &lt;- TRUE
+          temp_node_tipslabel_lineage &lt;- c(temp_node_tipslabel_lineage, lineage)
+        }
+      } else {
+        last_levelname &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[2]
+        last_levelname &lt;- str_replace(last_levelname, &quot;_&quot;, &quot; &quot;)
+        lineage &lt;- str_split(tmptiptax, &quot; &quot;, simplify = TRUE)[len]
+        lineage &lt;- str_c(lineage, last_levelname)
+        uncult_mark &lt;- FALSE
+        temp_node_tipslabel_lineage &lt;- c(temp_node_tipslabel_lineage, lineage)
+      }
+    }
+  }
+  # cat(temp_node_tipslabel_lineage, &quot;\n&quot;)
+  temp_consensus_linegae &lt;- c()
+  for (ele in temp_node_tipslabel_lineage) {
+    if (!str_detect(ele, &quot;^OTU_&quot;)) {
+      ## 排除 OTU 序列的 lineage 信息
+      tmplineage &lt;- str_split(ele, &quot;_&quot;, simplify = TRUE)
+      if (tmplineage[length(tmplineage)] == &quot;uncultured&quot;) {
+        tmplineage = tmplineage[1:(length(tmplineage) - 1)]
+      }
+      #cat(tmplineage, &quot;\n&quot;)
+      if (is.null(temp_consensus_linegae)) {
+        temp_consensus_linegae = tmplineage
+      } else {
+        ## 用交集的形式获取 一致性 lineage 信息 
+        temp_consensus_linegae &lt;- intersect(temp_consensus_linegae, tmplineage)
+      }
+    }
+    #tmplineage &lt;- str_replace(tmplineage, &quot; &quot;, &quot;&quot;)
+    #cat(temp_consensus_linegae, &quot;\n&quot;)
+  }
+  taxo_name &lt;- taxo_name_decidor(temp_consensus_linegae, uncult_mark)
+  NodeOPU_namerstr &lt;- NodeOPU_namer(prefix = &quot;OPU&quot;, OPUnummark = OPUnummarkstr, suffix = taxo_name)
+  #cat(NodeOPU_namerstr, &quot;\n&quot;)
+  Node_OPU_Names &lt;- c(Node_OPU_Names, NodeOPU_namerstr)
+  temp_node_tipslabel_lineage &lt;- c() #清除临时记录的 lineage 
+
+}
+
+o2 &lt;- plot(MNp4nj2)
+plot(MNp4nj2, show.tip.label = F, x.lim = o2$x.lim)
+tiplabels(MNp4nj2$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label)], grep(&quot;Otu*&quot;, MNp4nj$tip.label), adj = 0, col = &quot;red&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 3, cex = 0.7)
+tiplabels(MNp4nj2$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T)], grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T), adj = 0, col = &quot;black&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 1, cex = 0.7)
+nodelabels(node = c(unlist(otutips_secondlevel_node)), pch = 21, bg = &quot;#0000FF55&quot;, cex = 0.8)
+nodelabels(text = Node_OPU_Names, node = c(unlist(otutips_secondlevel_node)), adj = c(0.5), col = &quot;black&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 1, cex = 0.7)
+</code></pre>
