@@ -1,24 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>Bioinformatics on Wxh yihuan</title>
-    <link>https://wxhyihuan.netlify.app/tags/bioinformatics/</link>
-    <description>Recent content in Bioinformatics on Wxh yihuan</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Sat, 02 Jan 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://wxhyihuan.netlify.app/tags/bioinformatics/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>MetataxoOPUtool</title>
-      <link>https://wxhyihuan.netlify.app/post/2021/01/02/metataxooputool/</link>
-      <pubDate>Sat, 02 Jan 2021 00:00:00 +0000</pubDate>
-      
-      <guid>https://wxhyihuan.netlify.app/post/2021/01/02/metataxooputool/</guid>
-      <description>这个脚本主要是用来对系统发生树构建OPU操作的，但脚本功能还没完全，一些处理和功能还需修缮。
-关于OPU的概念和处理操作可以参考下面一些资料：
-Meng, X., Lu, S., Yang, J., Jin, D., Wang, X., &amp;amp; Bai, X., et al. (2017). Metataxonomics reveal vultures as a reservoir for clostridium perfringens. Emerging Microbes &amp;amp; Infections, 6(2), e9.
-Silva Database
-library(&amp;quot;ape&amp;quot;)library(&amp;quot;tidyverse&amp;quot;)#MNp4nj &amp;lt;- read.tree(&amp;quot;p4_NJ_copy.tree&amp;quot;)MNp4nj &amp;lt;- read.tree(&amp;quot;p4nj_sub_exract1.tree&amp;quot;)distval &amp;lt;- dist.nodes(MNp4nj)distval[1:5, 1:5]o &amp;lt;- plot(MNp4nj)plot(MNp4nj, show.tip.label = F, x.lim = o$x.lim)tiplabels(MNp4nj$tip.label[grep(&amp;quot;Otu*&amp;quot;, MNp4nj$tip.label)], grep(&amp;quot;Otu*&amp;quot;, MNp4nj$tip.label), adj = 0, col = &amp;quot;red&amp;quot;, frame = &amp;#39;none&amp;#39;, bg = &amp;quot;none&amp;quot;, font = 3, cex = 0.</description>
-    </item>
-    
-  </channel>
-</rss>

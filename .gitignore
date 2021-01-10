@@ -3,16 +3,3 @@
 .Rprofile
 .RData
 .Ruserdata
-blogdown
-.DS_Store
-Thumbs.db
-config.yaml
-index.Rmd
-layouts
-netlify.toml
-R
-README.md
-resources
-static
-themes
-WxhyihuanBlog.Rproj

@@ -1,59 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>R on Wxh yihuan</title>
-    <link>https://wxhyihuan.netlify.app/categories/r/</link>
-    <description>Recent content in R on Wxh yihuan</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <lastBuildDate>Thu, 10 Dec 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://wxhyihuan.netlify.app/categories/r/index.xml" rel="self" type="application/rss+xml" />
-    <item>
-      <title>Keras机器学习(1)-开始使用Keras</title>
-      <link>https://wxhyihuan.netlify.app/post/2020/12/10/startwithkeras/</link>
-      <pubDate>Thu, 10 Dec 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://wxhyihuan.netlify.app/post/2020/12/10/startwithkeras/</guid>
-      <description>开始使用Keras关于Keras API安装KerasMNIST数据练习MNIST 的卷积神经网络开始使用Keras关于Keras APIKeras 是一个用于构建和训练深度学习模型的高阶 API。它可用于快速设计原型、高级研究和生产，具有以下三个主要优势：
-方便用户使用: Keras 具有针对常见用例做出优化的简单而一致的界面。它可针对用户错误提供切实可行的清晰反馈。
-模块化和可组合: 将可配置的构造块连接在一起就可以构建 Keras 模型，并且几乎不受限制。
-易于扩展:可以编写自定义构造块以表达新的研究创意，并且可以创建新层、损失函数并开发先进的模型。
-这里还要提一下的是Estimators API，是在版本1.1中添加到Tensorflow中的，它提供了对较低级别Tensorflow核心操作的高级抽象。 它与Estimator实例一起使用，该实例是TensorFlow对完整模型的高级表示。Keras与Estimators API相似之处在于，它抽象化了深度学习模型组件，如层 layers, 激活函数activation functions 和优化器optimizers，使开发人员更容易使用。 它是一个模型级别的库，不处理低级操作，低级操作是张量操作库或后端的工作。 Keras支持三个后端–Tensorflow，Theano和CNTK。Keras在版本1.4.0（2017年11月2日）之前不属于Tensorflow的一部分，直到版本1.4.0，Keras才是Tensorflow的一部分。现在，当您使用tf.Keras(或者谈论’Tensorflow Keras’)时，您只需使用Keras接口和Tensorflow后端来构建和训练您的模型。
-因此，Estimator API和Keras API都在低级核心Tensorflow API之上提供了更高级的API，您可以使用其中任何一个来训练您的模型。
-目前(2021-01-04)根据一些学习练习情况，查的一些资料也建议是 如果是tf1.0, 建议使用estimator，tf2.0以上建议使用keras API。
-这里提供了Keras的R接口的文档。参见Keras的主要网站 https://keras.io 查询有关该项目的更多信息。
-安装Keras下面的方法可以为您提供基于默认cpu的Keras和TensorFlow安装。如果你想要一个更自定义的安装，例如，如果你想利用NVIDIA gpu，请参阅install_keras()和安装部分的文档
-install.packages(&amp;quot;keras&amp;quot;)## 或者## devtools::install_github(&amp;quot;rstudio/keras&amp;quot;)library(&amp;quot;keras&amp;quot;)install_keras()MNIST数据练习我们可以通过一个简单的例子来学习Keras的基础知识:从MNIST数据集识别手写数字。MNIST由28 x 28灰度图像的手写数字像这样:</description>
-    </item>
-    
-    <item>
-      <title>blogtest</title>
-      <link>https://wxhyihuan.netlify.app/post/2020/11/18/keras-with-r/</link>
-      <pubDate>Wed, 18 Nov 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://wxhyihuan.netlify.app/post/2020/11/18/keras-with-r/</guid>
-      <description>Keras机器学习的基础概览基本的图像分类回归文字分类使用tfhub中的学习模型过拟合和欠拟合保存和恢复模型Keras机器学习的基础概览本课程包括关于使用Keras进行机器学习的基本概念的教程。
-图像分类：使用fashingmist数据集进行图像分类。
-回归：使用波士顿住房数据集进行回归。
-文本分类：使用IMDB数据集进行文本分类。
-过拟合和不拟合：学习ML中的这些重要概念。
-保存和恢复：学习如何保存和恢复TensorFlow模型。
-基本的图像分类在本指南中，我们将训练一个神经网络模型来分类服装图像，如运动鞋和衬衫。如果您不理解所有的细节也没关系，这是一个完整的Keras程序的快速概述，详细信息将随我们的进展而解释。
-library(tensorflow)library(keras)导入Fashion MNIST数据集fashion_mnist &amp;lt;- dataset_fashion_mnist()本指南使用Fashion MNIST数据集，包含10个类别的7万张灰度图像。这些图片以低分辨率(28x28像素)展示了衣个别服，如下图所示:
-Figure 1: Fashion MNIST 样品(Zalando, MIT License)Fashion MNIST的目的是替代经典的MNIST数据集，后者通常被用作计算机视觉机器学习程序的“Hello, World”。MNIST数据集包含手写数字(0、1、2等)的图像，其格式与我们将在这里使用的衣物数据相同。
-本指南使用Fashion MNIST进行各种各样的操作，因为这是一个比常规MNIST更具挑战性的问题。这两个数据集都相对较小，用于验证算法是否如预期的那样工作。它们是测试和调试代码的良好起点。
-我们将使用60,000张图像来训练网络，并使用10,000张图像来评估网络学习分类图像的准确性。你可以直接从Keras访问Fashion MNIST。
-fashion_mnist &amp;lt;- dataset_fashion_mnist()c(train_images, train_labels) %&amp;lt;-% fashion_mnist$trainc(test_images, test_labels) %&amp;lt;-% fashion_mnist$test现在我们有四个数组: train_images和train_labels数组是训练集——即模型用来学习的数据。模型根据测试集进行测试的测试数据:test_images和test_labels。</description>
-    </item>
-    
-    <item>
-      <title>医学统计学笔记与R</title>
-      <link>https://wxhyihuan.netlify.app/post/2020/11/08/medical-statistics-with-r/</link>
-      <pubDate>Sun, 08 Nov 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://wxhyihuan.netlify.app/post/2020/11/08/medical-statistics-with-r/</guid>
-      <description>孙振球, 徐勇勇. 医学统计学.第4版[M]. 人民卫生出版社, 2014. Github: 医学统计学笔记与R https://wxhyihuan.github.io/MedicalStatisNotes/
-Bookdown: 医学统计学笔记与R https://bookdown.org/wxhyihuan/Notebook-of-medical-statistics-1605856202966/</description>
-    </item>
-    
-  </channel>
-</rss>
