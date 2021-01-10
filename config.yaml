@@ -29,8 +29,9 @@ menu:
       weight: 4
     - name: "Subscribe"
       url: "/index.xml"
-    - name: "CV"
+    - name: "Vitae"
       url: "/vitae/"
+      weight: 2
 
 params:
   description: "A Hugo theme ported from the static site generator Ivy."

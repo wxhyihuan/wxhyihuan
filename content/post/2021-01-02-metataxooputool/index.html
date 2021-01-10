@@ -1,5 +1,5 @@
 ---
-title: MetataxoOPUtool
+title: MetaTaxoOPUtools
 author: wxhyihuan
 date: '2021-01-02'
 slug: metataxooputool
@@ -15,46 +15,15 @@ tags:
 
 
 
-<p>这个脚本主要是用来对系统发生树构建OPU操作的，但脚本功能还没完全，一些处理和功能还需修缮。</p>
+<p>这个脚本主要是用来对对系统发生树快速构建OPU操作的，注意的是脚本功能还没完全 后面可能会在继续完善。</p>
 <p>关于OPU的概念和处理操作可以参考下面一些资料：</p>
 <ol style="list-style-type: decimal">
-<li><p>Meng, X., Lu, S., Yang, J., Jin, D., Wang, X., &amp; Bai, X., et al. (2017). <a href="https://pubmed.ncbi.nlm.nih.gov/28223683/">Metataxonomics reveal vultures as a reservoir for clostridium perfringens</a>. Emerging Microbes &amp; Infections, 6(2), e9.</p></li>
+<li><p>Yarza P, Yilmaz P, Pruesse E, Glöckner FO, Ludwig W, Schleifer KH, Whitman WB, Euzéby J, Amann R, Rosselló-Móra R. Uniting the classification of cultured and uncultured bacteria and archaea using 16S rRNA gene sequences. Nat Rev Microbiol. 2014 Sep;12(9):635-45. <a href="https://www.nature.com/articles/nrmicro3330">doi: 10.1038/nrmicro3330</a>. PMID: 25118885.</p></li>
 <li><p><a href="https://www.arb-silva.de/">Silva Database</a></p></li>
+<li><p>Meng X, Lu S, Yang J, Jin D, Wang X, Bai X, Wen Y, Wang Y, Niu L, Ye C, Rosselló-Móra R, Xu J. Metataxonomics reveal vultures as a reservoir for Clostridium perfringens. Emerg Microbes Infect. 2017 Feb 22;6(2):e9. <a href="" title="https://pubmed.ncbi.nlm.nih.gov/28223683/">doi: 10.1038/emi.2016.137</a>. PMID: 28223683; PMCID: PMC5322324.</p></li>
 </ol>
+<p>测试使用的两个测试文件： <a href="files/p4nj_sub_exract1.tree">p4nj_sub_exract1.tree</a> 和<a href="files/p4nj_sub_exract3.ntree">p4nj_sub_exract3.ntree</a>，是同一个系统发生树，但是tip labels包含的信息不一样。</p>
 <pre class="r"><code>
-library(&quot;ape&quot;)
-library(&quot;tidyverse&quot;)
-
-#MNp4nj &lt;- read.tree(&quot;p4_NJ_copy.tree&quot;)
-MNp4nj &lt;- read.tree(&quot;p4nj_sub_exract1.tree&quot;)
-
-distval &lt;- dist.nodes(MNp4nj)
-distval[1:5, 1:5]
-
-o &lt;- plot(MNp4nj)
-plot(MNp4nj, show.tip.label = F, x.lim = o$x.lim)
-tiplabels(MNp4nj$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label)], grep(&quot;Otu*&quot;, MNp4nj$tip.label), adj = 0, col = &quot;red&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 3, cex = 0.8)
-tiplabels(MNp4nj$tip.label[grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T)], grep(&quot;Otu*&quot;, MNp4nj$tip.label, invert = T), adj = 0, col = &quot;black&quot;, frame = &#39;none&#39;, bg = &quot;none&quot;, font = 1, cex = 0.8)
-
-OPUnummark &lt;- 1
-OPUmark &lt;- &quot;OPU_&quot;
-NodeOPU &lt;- paste(OPUmark, OPUnummark, sep = &quot;&quot;)
-
-MNp4nj$tip.label[MNp4nj$edge[,][which(MNp4nj$edge[, 1] == 112),]]
-
-
-## 每个Otu序列所在的节点和节点路径
-otu_tip_id &lt;- grep(&quot;Otu*&quot;, MNp4nj$tip.label)
-otutip_nodepath &lt;- nodepath(MNp4nj)[otu_tip_id]
-## 获取指定节点（191）下的所有tips label
-test1 &lt;- extract.clade(MNp4nj, 191)
-## 获取Otu tip所在的上级节点
-otutips_secondlevel_node &lt;- lapply(otutip_nodepath, function(el) {
-  el[length(el) - 1]
-})
-
-
-
 library(&quot;ape&quot;)
 library(&quot;tidyverse&quot;)
 

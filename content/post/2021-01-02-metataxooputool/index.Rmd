@@ -1,5 +1,5 @@
 ---
-title: MetataxoOPUtool
+title: MetaTaxoOPUtools
 author: wxhyihuan
 date: '2021-01-02'
 slug: metataxooputool
@@ -13,51 +13,25 @@ tags:
   - OPU
 ---
 
-这个脚本主要是用来对系统发生树构建OPU操作的，但脚本功能还没完全，一些处理和功能还需修缮。
+这个脚本主要是用来对对系统发生树快速构建OPU操作的，注意的是脚本功能还没完全 后面可能会在继续完善。
 
 关于OPU的概念和处理操作可以参考下面一些资料：
 
-1. Meng, X., Lu, S., Yang, J., Jin, D., Wang, X., &amp; Bai, X., et al. (2017). [Metataxonomics reveal vultures as a reservoir for clostridium perfringens](https://pubmed.ncbi.nlm.nih.gov/28223683/). Emerging Microbes &amp; Infections, 6(2), e9. 
+1. Yarza P, Yilmaz P, Pruesse E, Glöckner FO, Ludwig W, Schleifer KH, Whitman WB, Euzéby J, Amann R, Rosselló-Móra R. Uniting the classification of cultured and uncultured bacteria and archaea using 16S rRNA gene sequences. Nat Rev Microbiol. 2014 Sep;12(9):635-45. [doi: 10.1038/nrmicro3330]. PMID: 25118885.
 
 2. [Silva Database]
 
+3. Meng X, Lu S, Yang J, Jin D, Wang X, Bai X, Wen Y, Wang Y, Niu L, Ye C, Rosselló-Móra R, Xu J. Metataxonomics reveal vultures as a reservoir for Clostridium perfringens. Emerg Microbes Infect. 2017 Feb 22;6(2):e9. [doi: 10.1038/emi.2016.137]. PMID: 28223683; PMCID: PMC5322324.
+
+
+测试使用的两个测试文件： [p4nj_sub_exract1.tree](files/p4nj_sub_exract1.tree) 和[p4nj_sub_exract3.ntree](files/p4nj_sub_exract3.ntree)，是同一个系统发生树，但是tip labels包含的信息不一样。
+
+[doi: 10.1038/emi.2016.137]:(https://pubmed.ncbi.nlm.nih.gov/28223683/)
+[doi: 10.1038/nrmicro3330]: https://www.nature.com/articles/nrmicro3330
 [Silva Database]: https://www.arb-silva.de/
 
 
 ```r
-
-library("ape")
-library("tidyverse")
-
-#MNp4nj <- read.tree("p4_NJ_copy.tree")
-MNp4nj <- read.tree("p4nj_sub_exract1.tree")
-
-distval <- dist.nodes(MNp4nj)
-distval[1:5, 1:5]
-
-o <- plot(MNp4nj)
-plot(MNp4nj, show.tip.label = F, x.lim = o$x.lim)
-tiplabels(MNp4nj$tip.label[grep("Otu*", MNp4nj$tip.label)], grep("Otu*", MNp4nj$tip.label), adj = 0, col = "red", frame = 'none', bg = "none", font = 3, cex = 0.8)
-tiplabels(MNp4nj$tip.label[grep("Otu*", MNp4nj$tip.label, invert = T)], grep("Otu*", MNp4nj$tip.label, invert = T), adj = 0, col = "black", frame = 'none', bg = "none", font = 1, cex = 0.8)
-
-OPUnummark <- 1
-OPUmark <- "OPU_"
-NodeOPU <- paste(OPUmark, OPUnummark, sep = "")
-
-MNp4nj$tip.label[MNp4nj$edge[,][which(MNp4nj$edge[, 1] == 112),]]
-
-
-## 每个Otu序列所在的节点和节点路径
-otu_tip_id <- grep("Otu*", MNp4nj$tip.label)
-otutip_nodepath <- nodepath(MNp4nj)[otu_tip_id]
-## 获取指定节点（191）下的所有tips label
-test1 <- extract.clade(MNp4nj, 191)
-## 获取Otu tip所在的上级节点
-otutips_secondlevel_node <- lapply(otutip_nodepath, function(el) {
-  el[length(el) - 1]
-})
-
-
 
 library("ape")
 library("tidyverse")

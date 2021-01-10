@@ -1,0 +1,76 @@
+---
+title: Uniting the classification of cultured
+author: wxhyihuan
+date: '2014-05-10'
+slug: uniting-the-classification-of-cultured
+categories:
+ - OPU
+tags:
+ - Bioinformatics
+ - 16s
+---
+
+### Uniting the classification of cultured and uncultured bacteria and archaea using 16S rRNA gene sequences
+
+期刊：Nature Reviews Microbiology 
+
+IF：23.317
+
+链接：http://www.nature.com/nrmicro/journal/v12/n9/abs/nrmicro3330.html
+
+简要：
+Small subunit ribosomal RNA gene，亦即熟知的细菌(Bac.)与古菌(Arc.)这些原核生物中的 16S rRNA。对 16S rRNA 的研究以及在公开提供的数据库中的序列数都迅速增长，序列条目已经超过400 万。然而，对于细菌和古菌的分类和命名并没有统一的框架标准。
+
+在这篇分析性文章中，研究人员通过对 16S rRNA 序列数据库中的大量数据进行分析和分类命名术语汇总，提出了基于 16s rRNA 序列identities 对 Bac.和 Arc.在高阶分类水平的合理分类边界(Rational taxonomic boundaries)，包括了： 细菌与古菌在高阶分类水平(High taxa)上的合理的分类界域，更新了关于球细菌与古菌的种类和数量普查结果，以及阐述了可通用于可培养的和
+不可培养的微生物的在高阶分类水平的稳定层次分类方法(Stable hierarchical classification of high taxa)的原理。。同时，对数据的分析发现，只有近乎全长 16S rRNA 的数据才能提供物种分类多样性或差异的准确评估。另外，对现有数据的分析发现当前对于环境样品的研究研究大多数止步于高阶的分类水平。
+
+概要记录：
+
+1 、 It is remarkable that, although nearly 1.3 million eukaryotic species have been described so far, this number might represent only 20% of the richness that exists.
+
+2 、 Only ~11,000 bacterial and archaeal species have been classified so far. At the current rate of ~600 new descriptions per year, it has been estimated that it would take >1,000 years to classify all of the remaining species.
+
+3、 Moreover, the full extent of their diversity is difficult to conceptualize, owing to the lack of objective criteria (such as numerical thresholds) for taxonomic circumscriptions of uncultured microorganisms, which are identified only by sequence data. Thus, estimates for the total number of bacterial and archaeal species vary widely, from 3 × 104 to ~1012.
+
+4、 从2006~2012 年间，Silva REF 114 中的数据增长情况是：The number of newly detected species (at 98.7% sequence identity) was about 4 × 104 taxa and the number of newly detected genera (at 94.5% sequence identity) was about 1.3 × 104 taxa per year over the past six years.
+ 
+特殊环境的探索加上新的测序技术手段，也许会出现“柳暗花明又一村”的景象，毕竟“世界那么大，我们要去看看”)
+
+6、 虽然对于微生物的命名有正式规则，但是在进行物种分类(Taxa and their hierarchical classifications) 是一个人工的难免主观因素的过程。Only the rank of species is circumscribed by a combination of well-accepted criteria, which include:
+
+- DNA–DNA hybridization (DDH), with a threshold around 70%;
+
+- Average sequence identities of shared genes (ANI), with a threshold of around 94– 96%;
+
+- and 16S rRNA gene sequence identities, with a threshold of around 98.7%.
+
+- genetic criteria should always be accompanied by a discriminant phenotypic property
+
+7 、 Genera are also recognized by their phylogenetic separation from other such groups and the possession of 16S rRNA gene sequence identities of >95%. There are no robust rules for the circumscription of ranks above genus.(编者注：然而在 NGS 技术下快速发展的微生物群落多样性研究，如基于 Miseq 的 16s rDNA，ITs 研究技术，元基因组技术都主要集中在高阶的分类水平。)
+
+8 、 The pre-classification of environmental sequences in a global and unified system may have many advantages, such as avoiding cumbersome taxonomic revisions14 and producing a stable taxonomic framework.(编者注：承前启后)
+
+9、 利用 SILVA DB 上的 LTP 102 中的数据，计算在属及以上各水平的 Sequence identity threshold，见 Table 1。由于 LTP 中没一个种只记录了一种菌株数据，所以无法计算中水平的阈值。要注意的是，这些阈值需都是最小阈值，并且某水平下的不同分类的序列一致性值可能比计算的阈值要高，最好可以参考其他类型的数据，如形态学， 遗传学和环境(背景)数据。
+10、 通过对LTP108 中的数据进行特定区域片段来模拟不同Id 阈值在丰度估计中的应用的准确性。其中有 v1~v2 片段受阈值的影响效果是最明显的。Meanwhile， analysis of the taxa recovery rate indicates a great underestimation of taxa richness when partial sequences are used. Although the situation tends to ameliorate as longer segments are considered, near full-length 16S rRNA genes sequences are required for accurate richness estimations and accurate classifications of high taxa.(编者注：为什么对于高阶分类的 recovery rate 要求更长的序列呢？难道是因为分类水平越高，分类之间的 id 阈值越低，分类接线越模糊？？)
+
+11 、 In conclusion, the results indicate that near full-length SSU rRNA gene sequences are required for accurate richness estimations and accurate classifications of high taxa.
+ 
+13、 从估计的结果来看，会发现高阶分类水平的数目远远超过目前在 LPSN 中收录描述的数据，比如门水平的估计值达(1356-84)≈1300 种，而 LPSN 中仅有 27 种。捣成这种咸咸的主要原因可能是由于扩增和测序错误以及嵌合体这样的异常数据造成的估计偏差。但是，即便考虑到嵌合体造成的最大影响，门水平的数量也不过从1300 种减少到 1100 种左右的。
+
+14、 通过对 Silva REF 114 的数据在 98.7%9, 99.0% 和 99.5%三个水平的考察，发现大约有 2.1 × 104 species-level OTUs，并且估计出全球微生物种水平的总数约是 4 × 105 ，比以前的 2 × 106 少很多。同时，最这个数据也因该是谨慎看待的，因为估计的策略与简单化处理了许多因素，比如数据饱和性，低丰度物种的比例，以及对于估计偏向性问题的原因等。
+
+15、 为了使 cultured 和 uncultured 的微生物在分类标准上的一致，文章提出了CTUs 的概念 。A new biodiversity unit called the CTU (candidate taxonomic unit), which is compatible with the hierarchy that was established in the Bacteriological Code. Define a CTU as a biological entity that is delineated by a monophyletic set of sequences with a sequence identity that stays within, or very close to, the taxonomic threshold that is proposed for a given rank.(编者注：CTU 是指将在符合或非常接近在特定分类水平确定的分类序列一致性阈值下的单源序列集合作为研究的生物学实体)。
+
+16 、 CTU is conceived to be a combination of the OUT and OPU (operational phylogenetic unit), which are currently used by microbial ecologists and systematists.
+
+17、 CTUs 的分析过程：The recognition of CTUs starts with a preliminary classification based on OTUs (which is calculated using standard clustering algorithms with the different taxonomic thresholds that are identified in Table 1), the results of which guide the search for local meaningful phylogenetic clades in a reliable tree topology.
+
+18、 CTUs 的方法可以方便对已有的分类描述进行重新评测。作者用密螺旋体门(Phylum Spirochaetes, by the end
+of 2013, the 112 described species had been organized into 16 genera, four families,
+Spirochaetes.Class4 (which comprises the genus Brachyspira) and Spirochaetes.Class5 (which comprises the genera Leptospira, Leptonema and Turneriella)].
+
+19、 CTUs 也可用于环境样品的多样性分类工作，尤其是目前数据库中的uncultured Bacteria/Archaea 数据。作者用 Silva REF 108 中的 11 个门(6 Clades+8Candidate divisions)中选取 9426 条序列进行评测。It is remarkable that the total number of delineated CTUs (3,553 CTUs, distributed into 2,053 genera, 767 families, 411 orders, 240 classes and 82 phyla) was nearly identical to the total number of calculated OTUs (3,562 in total).
+
+20、	文章指出，早起所谓的“Environmental clades”是与序列数据的环境背景相关，而且只有很少部分的序列被这样描述，没有严格考虑各方面的因素和问题(not considered aspects that are related to size, phylogenetic depth, internal taxonomic classification or a standard nomenclature format) ， 并用 CTUs 的方 法对alphaproteobacterial clade SAR11 进行了评测，。
+
+21、 对 Classes 和 Phyla 的在系统发生关系的连续性的讨论，以及对 SAR11，TM7, OD1, OP3, OP11 and the phyla Elusimicrobia, Caldiserica 和 Armatimonadetes 的评测结果，跟进一步验证 CTUs 方法的效果。These discrepancies again emphasize the need to reconcile classification and nomenclature at all levels.
