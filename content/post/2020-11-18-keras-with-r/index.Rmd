@@ -1787,3 +1787,4 @@ new_model %>% evaluate(test_images, test_labels, verbose = 0)
 [callback_model_checkpoint的文档]:https://tensorflow.rstudio.com/keras/reference/callback_model_checkpoint.html
 [检查点格式]:https://www.tensorflow.org/guide/saved_model#save_and_restore_variables
 [checkpoint-formatted]:https://www.tensorflow.org/guide/saved_model#save_and_restore_variables
+[R Interface to Tensorflow]:https://tensorflow.rstudio.com/guide/keras/
