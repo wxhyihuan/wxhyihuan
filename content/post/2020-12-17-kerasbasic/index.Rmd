@@ -334,3 +334,4 @@ model %>% save_model_tf('my_model/') # Recreate the exact same model, including 
 [Glorot uniform]:https://tensorflow.rstudio.com/keras/reference/initializer_glorot_uniform.html
 [layer_dense]:https://tensorflow.rstudio.com/guide/keras/reference/layer_dense.html
 [activation function]:https://tensorflow.rstudio.com/reference/keras/#section-activations
+[R Interface to Tensorflow]:https://tensorflow.rstudio.com/guide/keras/

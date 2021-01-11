@@ -664,3 +664,4 @@ model %>% fit(
 [MNIST handwritten digits classification]:https://tensorflow.rstudio.com/guide/keras/examples/mnist_mlp
 [Character-level text generation with LSTM]:https://tensorflow.rstudio.com/guide/keras/examples/lstm_text_generation
 [Modifid in place]:https://tensorflow.rstudio.com/guide/keras/sequential_model/faq.html#why-are-keras-objects-modified-in-place
+[R Interface to Tensorflow]:https://tensorflow.rstudio.com/guide/keras/
