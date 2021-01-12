@@ -1,0 +1,349 @@
+---
+title: Keras机器学习(4)-Functional API介绍
+author: wxhyihuan
+date: '2021-01-05'
+slug: kerasfunctionalapi
+output:
+  blogdown::html_page:
+    toc: true
+    toc_depth: 3
+    fig_width: 6
+    dev: "svg"
+    css: style.css
+categories:
+  - Keras
+  - deep learning
+tags:
+  - Keras
+  - R
+---
+
+  <link rel="stylesheet" href="style.css" type="text/css" />
+
+<div id="TOC">
+<ul>
+<li><a href="#模型调用">模型调用</a></li>
+<li><a href="#多输入多输出模式">多输入、多输出模式</a></li>
+<li><a href="#共享层">共享层</a></li>
+<li><a href="#层节点">层“节点”</a></li>
+<li><a href="#示例">示例</a><ul>
+<li><a href="#inception-module">INCEPTION MODULE</a></li>
+<li><a href="#residual-connection-on-a-convolution-layer">RESIDUAL CONNECTION ON A CONVOLUTION LAYER</a></li>
+<li><a href="#shared-vision-model">SHARED VISION MODEL</a></li>
+<li><a href="#visual-question-answering-model">VISUAL QUESTION ANSWERING MODEL</a></li>
+<li><a href="#video-question-answering-model">VIDEO QUESTION ANSWERING MODEL</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div class="infobox caution">
+<div class="center">
+<p><font color="red" size=5><strong>提  示</strong></font></p>
+</div>
+<p>本教程译自Rstudio团队的TensorFlow实例教程，详细见：<b> <a href="https://tensorflow.rstudio.com/guide/keras/">R Interface to Tensorflow</a></b>。</p>
+</div>
+<p>Keras functional API是定义复杂模型(如多输出模型、有向非循环图或具有共享层的模型)的一种方法。</p>
+<p>在了解Functional API之前，建议您先了解 <a href="https://tensorflow.rstudio.com/guide/keras/sequential_model">Sequential API</a> 。</p>
+<p>第一个例子:一个紧密连接的网络，虽然使用<a href="https://tensorflow.rstudio.com/guide/keras/sequential_model">Sequential API</a> 更适合构建这样的简单模型，但是先从简单例子开始了解Functional API吧。</p>
+<p>要使用Functional API，请构建输入和输出层(input &amp; output layers)，然后将它们传递给model()函数。然后这个模型可以像Keras顺序模型一样进行训练。</p>
+<pre class="r"><code>library(keras)
+
+# input layer
+inputs &lt;- layer_input(shape = c(784))
+ 
+# outputs compose input + dense layers
+predictions &lt;- inputs %&gt;%
+  layer_dense(units = 64, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 64, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 10, activation = &#39;softmax&#39;)
+
+# create and compile model
+model &lt;- keras_model(inputs = inputs, outputs = predictions)
+model %&gt;% compile(
+  optimizer = &#39;rmsprop&#39;,
+  loss = &#39;categorical_crossentropy&#39;,
+  metrics = c(&#39;accuracy&#39;)
+)</code></pre>
+<div id="模型调用" class="section level2">
+<h2>模型调用</h2>
+<p>所有的模型都是可调用的，就像层一样。使用Functional API，可以很容易地重用训练过的模型：您可以将任何模型视为一个层。请注意，您不仅重用了模型的体系结构，还重用了它的权重。</p>
+<pre class="r"><code>x &lt;- layer_input(shape = c(784))
+# This works, and returns the 10-way softmax we defined above.
+y &lt;- x %&gt;% model</code></pre>
+<p>例如，这可以允许快速创建能够处理输入序列的模型。你可以把一个图像分类模型变成一个视频分类模型，只用一行:</p>
+<pre class="r"><code># Input tensor for sequences of 20 timesteps,
+# each containing a 784-dimensional vector
+input_sequences &lt;- layer_input(shape = c(20, 784))
+
+# This applies our previous model to the input sequence
+processed_sequences &lt;- input_sequences %&gt;%
+  time_distributed(model)</code></pre>
+</div>
+<div id="多输入多输出模式" class="section level2">
+<h2>多输入、多输出模式</h2>
+<p>Multi-input and multi-output models，下面是Functional API的一个很好的用例:具有多个输入和输出的模型。functional API使操作大量相互交织的数据流变得容易。</p>
+<p>让我们考虑以下模型。我们试图预测一个新闻标题在推特上会得到多少转发和点赞。模型的主要输入将是标题本身，作为一个单词序列，但为了让事情更有趣，我们的模型还将有一个辅助输入，接收额外的数据，如标题发布的时间等。</p>
+<p>该模型还将通过两个损失函数进行监督。在模型早期使用主损失函数是较好的深度模型正则化机制。下面是我们的模型:</p>
+<p align="center">
+<img src="https://tensorflow.rstudio.com/guide/keras/images/multi-input-multi-output-graph.png" 
+width="50%"  alt="Multi-input and multi-output models" >
+</p>
+<p>下面使用Functional API 来实现它：</p>
+<p>主输入将以整数序列的形式接收标题(每个整数编码一个单词)。整数将在1到10,000之间(10,000个单词的词汇表)，序列将有100个单词长。</p>
+<p>我们将包括一个</p>
+<pre class="r"><code>library(keras)
+
+main_input &lt;- layer_input(shape = c(100), dtype = &#39;int32&#39;, name = &#39;main_input&#39;)
+
+lstm_out &lt;- main_input %&gt;% 
+  layer_embedding(input_dim = 10000, output_dim = 512, input_length = 100) %&gt;% 
+  layer_lstm(units = 32)</code></pre>
+<p>这里我们插入辅助损耗，即使模型中的主要损耗要高得多，也可以让长短期记忆网络（LSTM） 和嵌入层顺利的训练:</p>
+<pre class="r"><code>auxiliary_output &lt;- lstm_out %&gt;% 
+  layer_dense(units = 1, activation = &#39;sigmoid&#39;, name = &#39;aux_output&#39;)</code></pre>
+<p>此时，我们通过将辅助输入数据与LSTM输出连接起来，在其顶部叠加一个深度紧密连接的网络，并添加主逻辑回归层，将其输入到模型中</p>
+<pre class="r"><code>auxiliary_input &lt;- layer_input(shape = c(5), name = &#39;aux_input&#39;)
+
+main_output &lt;- layer_concatenate(c(lstm_out, auxiliary_input)) %&gt;%  
+  layer_dense(units = 64, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 64, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 64, activation = &#39;relu&#39;) %&gt;% 
+  layer_dense(units = 1, activation = &#39;sigmoid&#39;, name = &#39;main_output&#39;)</code></pre>
+<p>再定义了一个有两个输入和两个输出的模型:</p>
+<pre class="r"><code>model &lt;- keras_model(
+  inputs = c(main_input, auxiliary_input), 
+  outputs = c(main_output, auxiliary_output)
+)
+
+summary(model)
+</code></pre>
+<p>我们编译这个模型，并把辅助损失的权重定为0.2。要为每个不同的输出指定不同的loss_weights或loss，可以使用列表或字典。这里我们传递一个loss作为loss参数，因此同样的loss将用于所有层的输出。</p>
+<pre class="r"><code>model %&gt;% compile(
+  optimizer = &#39;rmsprop&#39;,
+  loss = &#39;binary_crossentropy&#39;,
+  loss_weights = c(1.0, 0.2)
+)</code></pre>
+<p>我们可以通过传递输入数组和目标数组列表来训练模型:</p>
+<pre class="r"><code>model %&gt;% fit(
+  x = list(headline_data, additional_data),
+  y = list(labels, labels),
+  epochs = 50,
+  batch_size = 32
+)</code></pre>
+<p>由于我们的输入和输出都被命名了(我们给它们传递了一个“name”参数)，我们也可以通过以下方式编译模型:</p>
+<pre class="r"><code>model %&gt;% compile(
+  optimizer = &#39;rmsprop&#39;,
+  loss = list(main_output = &#39;binary_crossentropy&#39;, aux_output = &#39;binary_crossentropy&#39;),
+  loss_weights = list(main_output = 1.0, aux_output = 0.2)
+)
+
+# And trained it via:
+model %&gt;% fit(
+  x = list(main_input = headline_data, aux_input = additional_data),
+  y = list(main_output = labels, aux_output = labels),
+  epochs = 50,
+  batch_size = 32
+)</code></pre>
+</div>
+<div id="共享层" class="section level2">
+<h2>共享层</h2>
+<p>Functional API的另一个特点是使用共享层的模型。</p>
+<p>让我们考虑一个tweet数据集。我们想要构建一个模型来判断两条tweet是否来自同一个人(例如，这允许我们通过tweet的相似性来比较用户)。</p>
+<p>实现这一点的一种方法是构建一个模型，将两个tweet编码成两个向量，连接向量，然后添加逻辑回归;这将输出两个tweet共享同一作者的概率。然后对模型进行正面推文和负面推文的训练。</p>
+<p>因为这个问题是对称的，所以应该重用编码第一条tweet的机制(权重等)来编码第二条tweet。这里，我们使用一个共享的LSTM层对tweet进行编码。</p>
+<p>下面是使用functional API来构建它。我们将一个形状为(280,256)的二进制矩阵作为一条推文的输入，即一个由280个大小为256的向量组成的序列，其中256维向量中的每个维编码一个字符的存在/缺失(来自256个高频字符的字母表中)。</p>
+<pre class="r"><code>library(keras)
+
+tweet_a &lt;- layer_input(shape = c(280, 256))
+tweet_b &lt;- layer_input(shape = c(280, 256))</code></pre>
+<p>要在不同的输入之间共享一个层，只需实例化该层一次，然后在需要使用的输入数据上调用它就可以:</p>
+<pre class="r"><code># This layer can take as input a matrix and will return a vector of size 64
+shared_lstm &lt;- layer_lstm(units = 64)
+
+# When we reuse the same layer instance multiple times, the weights of the layer are also
+# being reused (it is effectively *the same* layer)
+encoded_a &lt;- tweet_a %&gt;% shared_lstm
+encoded_b &lt;- tweet_b %&gt;% shared_lstm
+
+# We can then concatenate the two vectors and add a logistic regression on top
+predictions &lt;- layer_concatenate(c(encoded_a, encoded_b), axis=-1) %&gt;% 
+  layer_dense(units = 1, activation = &#39;sigmoid&#39;)
+
+# We define a trainable model linking the tweet inputs to the predictions
+model &lt;- keras_model(inputs = c(tweet_a, tweet_b), outputs = predictions)
+
+model %&gt;% compile(
+  optimizer = &#39;rmsprop&#39;,
+  loss = &#39;binary_crossentropy&#39;,
+  metrics = c(&#39;accuracy&#39;)
+)
+
+model %&gt;% fit(list(data_a, data_b), labels, epochs = 10)</code></pre>
+</div>
+<div id="层节点" class="section level2">
+<h2>层“节点”</h2>
+<p>在某个输入上调用一个层时，实际上都是在创建一个新的张量(该层的输出)，并向该层添加一个“节点”，将输入张量与输出张量连接起来。当你多次调用同一层时，该层拥有索引为1,2,2…的多个节点。</p>
+<p>你可以通过 layer<span class="math inline">\(output 得到一个层的输出张量，或者通过layer\)</span>output_shape得到它的输出形状。但如果一个层连接到多个输入呢?</p>
+<p>只要一个层只连接到一个输入，就不会产生混淆，$output将返回该层的一个输出:</p>
+<pre class="r"><code>a &lt;- layer_input(shape = c(280, 256))
+
+lstm &lt;- layer_lstm(units = 32)
+
+encoded_a &lt;- a %&gt;% lstm
+
+lstm$output</code></pre>
+<p>如果图层有多个输入，则不是这样:</p>
+<pre class="r"><code>a &lt;- layer_input(shape = c(280, 256))
+b &lt;- layer_input(shape = c(280, 256))
+
+lstm &lt;- layer_lstm(units = 32)
+
+encoded_a &lt;- a %&gt;% lstm
+encoded_b &lt;- b %&gt;% lstm
+
+lstm$output
+
+## AttributeError: Layer lstm_4 has multiple inbound nodes, hence the notion of &quot;layer output&quot; is ill-defined. Use `get_output_at(node_index)` instead.</code></pre>
+<p>多输入输出的操作可以这样：</p>
+<pre class="r"><code>get_output_at(lstm, 1)
+get_output_at(lstm, 2)</code></pre>
+<p>属性input_shape和output_shape也是如此:只要层只有一个节点，或者只要所有节点具有相同的输入/输出形状，然后，“层输出/输入形状”的概念得到了很好的定义，一个形状将由layer<span class="math inline">\(output_shape/layer\)</span>input_shape返回。但如果，举个例子，你将相同的layer_conv_2d()层应用于shape(32,32,3)的输入，然后输入到shape (64,64,3)，该层将有多个输入/输出形状，你必须指定它们所属节点的索引来获取它们:</p>
+<pre class="r"><code>a &lt;- layer_input(shape = c(32, 32, 3))
+b &lt;- layer_input(shape = c(64, 64, 3))
+
+conv &lt;- layer_conv_2d(filters = 16, kernel_size = c(3,3), padding = &#39;same&#39;)
+
+conved_a &lt;- a %&gt;% conv
+
+# only one input so far, the following will work
+conv$input_shape
+
+conved_b &lt;- b %&gt;% conv
+# now the `$input_shape` property wouldn&#39;t work, but this does:
+get_input_shape_at(conv, 1)
+get_input_shape_at(conv, 2) </code></pre>
+</div>
+<div id="示例" class="section level2">
+<h2>示例</h2>
+<div id="inception-module" class="section level3">
+<h3>INCEPTION MODULE</h3>
+<p>有关Inception architecture的更多信息，请参见深入使用卷积(<a href="http://arxiv.org/abs/1409.4842">Going Deeper with Convolutions</a>)。</p>
+<pre class="r"><code>library(keras)
+
+input_img &lt;- layer_input(shape = c(256, 256, 3))
+
+tower_1 &lt;- input_img %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(1, 1), padding=&#39;same&#39;, activation=&#39;relu&#39;) %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), padding=&#39;same&#39;, activation=&#39;relu&#39;)
+
+tower_2 &lt;- input_img %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(1, 1), padding=&#39;same&#39;, activation=&#39;relu&#39;) %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(5, 5), padding=&#39;same&#39;, activation=&#39;relu&#39;)
+
+tower_3 &lt;- input_img %&gt;% 
+  layer_max_pooling_2d(pool_size = c(3, 3), strides = c(1, 1), padding = &#39;same&#39;) %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(1, 1), padding=&#39;same&#39;, activation=&#39;relu&#39;)
+
+output &lt;- layer_concatenate(c(tower_1, tower_2, tower_3), axis = 1)</code></pre>
+</div>
+<div id="residual-connection-on-a-convolution-layer" class="section level3">
+<h3>RESIDUAL CONNECTION ON A CONVOLUTION LAYER</h3>
+<p>有关残差网络(Residual networks)的更多信息，请参见图像识别的深度残差学习(<a href="http://arxiv.org/abs/1512.03385">Deep Residual Learning for Image Recognition</a>)。</p>
+<pre class="r"><code># input tensor for a 3-channel 256x256 image
+x &lt;- layer_input(shape = c(256, 256, 3))
+# 3x3 conv with 3 output channels (same as input channels)
+y &lt;- x %&gt;% layer_conv_2d(filters = 3, kernel_size =c(3, 3), padding = &#39;same&#39;)
+# this returns x + y.
+z &lt;- layer_add(c(x, y))</code></pre>
+</div>
+<div id="shared-vision-model" class="section level3">
+<h3>SHARED VISION MODEL</h3>
+<p>该模型在两个输入上重用相同的图像处理模块，对两个MNIST数字是相同还是不同进行分类。</p>
+<pre class="r"><code># First, define the vision model
+digit_input &lt;- layer_input(shape = c(27, 27, 1))
+out &lt;- digit_input %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3)) %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3)) %&gt;% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_flatten()
+
+vision_model &lt;- keras_model(digit_input, out)
+
+# Then define the tell-digits-apart model
+digit_a &lt;- layer_input(shape = c(27, 27, 1))
+digit_b &lt;- layer_input(shape = c(27, 27, 1))
+
+# The vision model will be shared, weights and all
+out_a &lt;- digit_a %&gt;% vision_model
+out_b &lt;- digit_b %&gt;% vision_model
+
+out &lt;- layer_concatenate(c(out_a, out_b)) %&gt;% 
+  layer_dense(units = 1, activation = &#39;sigmoid&#39;)
+
+classification_model &lt;- keras_model(inputs = c(digit_a, digit_b), out)</code></pre>
+</div>
+<div id="visual-question-answering-model" class="section level3">
+<h3>VISUAL QUESTION ANSWERING MODEL</h3>
+<p>当被问及关于图片的自然语言问题时，这个模型可以选择正确的单字答案。</p>
+<p>它的工作原理是将问题编码成一个向量，将图像编码成一个向量，将两者连接起来，并在一些潜在答案的词汇表上进行逻辑回归训练。</p>
+<pre class="r"><code># First, let&#39;s define a vision model using a Sequential model.
+# This model will encode an image into a vector.
+vision_model &lt;- keras_model_sequential() 
+vision_model %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = &#39;relu&#39;, padding = &#39;same&#39;,
+                input_shape = c(224, 224, 3)) %&gt;% 
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = &#39;relu&#39;) %&gt;% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = &#39;relu&#39;, padding = &#39;same&#39;) %&gt;% 
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = &#39;relu&#39;) %&gt;% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_conv_2d(filters = 256, kernel_size = c(3, 3), activation = &#39;relu&#39;, padding = &#39;same&#39;) %&gt;% 
+  layer_conv_2d(filters = 256, kernel_size = c(3, 3), activation = &#39;relu&#39;) %&gt;% 
+  layer_conv_2d(filters = 256, kernel_size = c(3, 3), activation = &#39;relu&#39;) %&gt;% 
+  layer_max_pooling_2d(pool_size = c(2, 2)) %&gt;% 
+  layer_flatten()
+
+# Now let&#39;s get a tensor with the output of our vision model:
+image_input &lt;- layer_input(shape = c(224, 224, 3))
+encoded_image &lt;- image_input %&gt;% vision_model
+
+# Next, let&#39;s define a language model to encode the question into a vector.
+# Each question will be at most 100 word long,
+# and we will index words as integers from 1 to 9999.
+question_input &lt;- layer_input(shape = c(100), dtype = &#39;int32&#39;)
+encoded_question &lt;- question_input %&gt;% 
+  layer_embedding(input_dim = 10000, output_dim = 256, input_length = 100) %&gt;% 
+  layer_lstm(units = 256)
+
+# Let&#39;s concatenate the question vector and the image vector then
+# train a logistic regression over 1000 words on top
+output &lt;- layer_concatenate(c(encoded_question, encoded_image)) %&gt;% 
+  layer_dense(units = 1000, activation=&#39;softmax&#39;)
+
+# This is our final model:
+vqa_model &lt;- keras_model(inputs = c(image_input, question_input), outputs = output)</code></pre>
+</div>
+<div id="video-question-answering-model" class="section level3">
+<h3>VIDEO QUESTION ANSWERING MODEL</h3>
+<p>现在我们已经训练了我们的图像QA模型，我们可以快速将其转换为视频QA模型。通过适当的训练，你将能够向它展示一个短视频(例如100帧的人类动作)，并问一个关于视频的自然语言问题(例如“这个男孩在玩什么运动?””- &gt;“足球”)。</p>
+<pre class="r"><code>video_input &lt;- layer_input(shape = c(100, 224, 224, 3))
+
+# This is our video encoded via the previously trained vision_model (weights are reused)
+encoded_video &lt;- video_input %&gt;% 
+  time_distributed(vision_model) %&gt;% 
+  layer_lstm(units = 256)
+
+# This is a model-level representation of the question encoder, reusing the same weights as before:
+question_encoder &lt;- keras_model(inputs = question_input, outputs = encoded_question)
+
+# Let&#39;s use it to encode the question:
+video_question_input &lt;- layer_input(shape = c(100), dtype = &#39;int32&#39;)
+encoded_video_question &lt;- video_question_input %&gt;% question_encoder
+
+# And this is our video question answering model:
+output &lt;- layer_concatenate(c(encoded_video, encoded_video_question)) %&gt;% 
+  layer_dense(units = 1000, activation = &#39;softmax&#39;)
+
+video_qa_model &lt;- keras_model(inputs= c(video_input, video_question_input), outputs = output)</code></pre>
+</div>
+</div>

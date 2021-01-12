@@ -21,7 +21,7 @@ tags:
 
 :::: {.infobox .caution  data-latex=""}
 ::: {.center  data-latex=""}
-<font color="red">**提示**</font>
+<font color="red">**提&nbsp;&nbsp;示**</font>
 :::
 本教程译自Rstudio团队的TensorFlow实例教程，详细见：<b> [R Interface to Tensorflow]</b>。
 ::::
