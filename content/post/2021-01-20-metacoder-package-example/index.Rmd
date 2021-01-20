@@ -1,0 +1,476 @@
+---
+title: Metacoder package Example
+author: wxhyihuan
+date: '2021-01-20'
+slug: metacoder-package-example
+categories:
+  - Metataxo
+  - R
+tags:
+  - Bioinformatics
+  - metacoder
+---
+
+
+最近在做一个人体微生物组的数据，里面使用到一个metacoder的包，可以搞笑帮处理这一类数据的重构和计算，而且结合其他一些包，对系统化申诉的操作即可以实现非常快速度的查找和方便的计算不同水平的（相对）丰度。
+
+第一部分 work.r 是主要的调用整理数据和绘图函数的流程脚本：
+``` r
+# Script name: work.r
+#加载函数脚本
+source("~/NameChecked/Functions.R")
+
+excelfile<-"~/PacBiovsMiseq.xlsx"
+
+Pb_exc1 <- read_excel(excelfile, sheet = 1)
+Ms_exc1 <- read_excel(excelfile, sheet = 2)
+
+# 对不同数据的物种信息参考 NCBI taxonomy DB 进行统一
+pb_taxoinfo_output <- get_ncbi_taxonamy(taxolist = Pb_exc1$Taxon)
+# miseq的数据时Silva/GreenGene的形式，需要先按形式解析提取，然后从NCBI获取结果
+#miseq_taxopasered <- miseq_taxo_paser(taxo_levels_list = Ms_exc1$Taxo)
+miseq_taxopasered <- miseq_taxo_paser2(taxo_levels_list = Ms_exc1$Taxon)
+mq_taxoinfo_output <- get_ncbi_taxonamy(taxolist = miseq_taxopasered)
+save.image()
+
+pb_taxo <- pb_taxoinfo_output[[1]]
+mq_taxo <- mq_taxoinfo_output[[1]]
+
+pb_unkown <- pb_taxoinfo_output[[2]]
+mq_unkown <- mq_taxoinfo_output[[2]]
+
+## 01 绘制指定水平的物种鉴定 Venn 图
+get_venn_diagram(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels)
+
+
+## 02 获取不同水平的物种交差集( Venn )信息
+taxo_venn_at_diff_level <- get_venn_info(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels)
+
+## 03 将与NCBI taxonomy 统一后的分类信息与丰度表格进行整合得到 OTU_Table和 Taxo mapping数据对象，以及根据NCBI taxonomy 信息将
+# 两种平台的样本数据合并（注意不是将相同OPU/OTU/Taxo的值相加），主要是将样本信息合并在一张表，合成一个包含所有taxonomy在两个平台中的丰度
+
+pb_otu_table <- as_tibble(Pb_exc1[, c(-1, -2, - ncol(Pb_exc1))], .name_repair = "universal")
+pb_otu_table <- dplyr::bind_cols(pb_taxo, pb_otu_table)
+colnames(pb_otu_table)
+mq_otu_table <- as_tibble(Ms_exc1[, c(-1, -2)], .name_repair = "universal")
+mq_otu_table <- dplyr::bind_cols(mq_taxo, mq_otu_table)
+colnames(mq_otu_table)
+
+#合成一个包含所有taxonomy在两个平台中的丰度数据  *#######
+pb_sampleids <- c(colnames(pb_otu_table)[(length(taxo_levels) + 1):ncol(pb_otu_table)])
+mq_sampleids <- c(colnames(mq_otu_table)[(length(taxo_levels) + 1):ncol(mq_otu_table)])
+
+# 整理一张样本了分组信息表
+samples_colname <- c("sample_id", "tech", "groups")
+samples_info <- matrix(0, nrow = (length(pb_sampleids) + length(mq_sampleids)), ncol = length(samples_colname))
+colnames(samples_info) <- samples_colname
+samples_info[, 1] <- c(pb_sampleids, mq_sampleids)
+samples_info[, 2] <- c(rep("Pacbio", length(pb_sampleids)), rep("Miseq", length(mq_sampleids)))
+samples_info[, 3] <- c(rep("Pacbio", length(pb_sampleids)), rep("Miseq", length(mq_sampleids)))
+tmpmqsampleis <- str_replace(mq_sampleids, "_total", "")
+samples_info[1:length(pb_sampleids), 3][!samples_info[1:length(pb_sampleids), 1] %in% (intersect(tmpmqsampleis, pb_sampleids))] <- "OnlyPacBio"
+samples_info[(length(pb_sampleids) + 1):(length(pb_sampleids) + length(mq_sampleids)), 3][!tmpmqsampleis %in% (intersect(tmpmqsampleis, pb_sampleids))] <- "OnlyMiseq"
+samples_info <- as.data.frame(samples_info) ### 整理完成的样本信息表
+save.image()
+
+# 整理read深度数据表
+lowestlevel <- "genus"
+pb_taxo_lineage <- get_lineage(pb_taxo[, 1:which(taxo_levels == lowestlevel)])
+pb_taxo_lineage <- dplyr::bind_cols(Lineage = pb_taxo_lineage, pb_otu_table[,])
+#pb_taxo_lineage <- as_tibble(pb_taxo_lineage)
+
+mq_taxo_lineage <- get_lineage(mq_taxo[, 1:which(taxo_levels == lowestlevel)])
+mq_taxo_lineage <- dplyr::bind_cols(Lineage = mq_taxo_lineage, mq_otu_table[,])
+#mq_taxo_lineage <- as_tibble(mq_taxo_lineage)
+merged_taxo_tab <- matrix(0, nrow = (nrow(pb_otu_table) + nrow(mq_otu_table)), ncol = (1 + length(taxo_levels) + (ncol(pb_otu_table) - length(taxo_levels)) + (ncol(mq_otu_table) - (length(taxo_levels)))))
+colnames(merged_taxo_tab) <- c(colnames(pb_taxo_lineage[1, 1:8]), colnames(pb_taxo_lineage[1, 9:ncol(pb_taxo_lineage)]), colnames(mq_taxo_lineage[1, 9:ncol(mq_taxo_lineage)]))
+merged_taxo_tab[1:nrow(pb_taxo_lineage), 1:8] <- as.matrix(pb_taxo_lineage[, 1:8])
+merged_taxo_tab[1:nrow(pb_taxo_lineage), 9:(8 + length(pb_sampleids))] <- as.matrix(pb_taxo_lineage[, 9:(8 + length(pb_sampleids))])
+
+merged_taxo_tab[(nrow(pb_taxo_lineage) + 1):nrow(merged_taxo_tab), 1:8] <- as.matrix(mq_taxo_lineage[, 1:8])
+merged_taxo_tab[(nrow(pb_taxo_lineage) + 1):nrow(merged_taxo_tab), (9 + length(pb_sampleids)):(8 + length(pb_sampleids) + length(mq_sampleids))] <- as.matrix(mq_taxo_lineage[, 9:(8 + length(mq_sampleids))])
+
+merged_taxo_info <- merged_taxo_tab[, 1:8]
+merged_taxo_tib <- as_tibble(merged_taxo_tab[, 9:ncol(merged_taxo_tab)])
+merged_taxo_tib <- merged_taxo_tib %>% mutate_if(is.character, as.numeric)
+
+# 合并完成的包含两组样本的数据taxonomy 和 丰度信息的数据
+merged_taxo_tib <-  as_tibble(dplyr::bind_cols(as_tibble(merged_taxo_info), merged_taxo_tib))
+
+
+## 04 使用metacoder进行分析和绘图
+merged_taxo_parsed <- parse_tax_data(merged_taxo_tib, class_cols = "Lineage", class_sep = ";", named_by_rank = TRUE)
+# 计算Pacbio数据组的read深度信息,删除low-abundance(这里暂时设置为 min_count=0 ),
+merged_taxo_parsed$data$low_counts <- zero_low_counts(merged_taxo_parsed, data = "tax_data", min_count = 0, cols = c(10:(9 + length(pb_sampleids))))
+merged_taxo_parsed <- filter_obs(merged_taxo_parsed, data = "low_counts", drop_taxa = FALSE)
+merged_taxo_parsed$data$taxon_counts <- calc_taxon_abund(merged_taxo_parsed, data = "low_counts")
+merged_taxo_parsed$data$taxon_counts$total <- rowSums(merged_taxo_parsed$data$taxon_counts[, -1])
+set.seed(1) # This makes the plot appear the same each time it is run 
+heat_tree(merged_taxo_parsed,
+          node_label = taxon_names,
+          node_size = total,
+          node_color = total,
+          edge_size_range = c(0.005, 0.005),
+          node_size_axis_label = "OTU Count",
+          node_color_axis_label = "Samples with reads",
+          layout = "davidson-harel", # The primary layout algorithm
+          initial_layout = "reingold-tilford",
+          output_file = "merged_taxo_parsed4Pacbio.pdf")
+
+# 计算Miseq数据组的read深度信息,删除low-abundance(这里暂时设置为 min_count=5 ),
+merged_taxo_parsed$data$low_counts_mq <- zero_low_counts(merged_taxo_parsed, data = "tax_data", min_count = 5, cols = c((10 + length(pb_sampleids)):(9 + length(pb_sampleids) + length(mq_sampleids))))
+merged_taxo_parsed <- filter_obs(merged_taxo_parsed, data = "low_counts_mq", drop_taxa = FALSE)
+merged_taxo_parsed$data$taxon_counts_mq <- calc_taxon_abund(merged_taxo_parsed, data = "low_counts_mq")
+merged_taxo_parsed$data$taxon_counts_mq$total_mq <- rowSums(merged_taxo_parsed$data$taxon_counts_mq[, -1])
+set.seed(1) # This makes the plot appear the same each time it is run 
+heat_tree(merged_taxo_parsed,
+          node_label = taxon_names,
+          node_size = total_mq,
+          node_color = total_mq,
+          edge_size_range = c(0.005, 0.005),
+          node_size_axis_label = "OTU Count",
+          node_color_axis_label = "Samples with reads",
+          layout = "davidson-harel", # The primary layout algorithm
+          initial_layout = "reingold-tilford",
+          output_file = "merged_taxo_parsed4MiSeq.pdf")
+
+##05 计算各个样品数据的相对丰度obs_props 和 各个物种的丰度tax_abund，各个taxo在各组样本中出现的样本数n_samples
+merged_taxo_parsed$data$obs_props <- calc_obs_props(merged_taxo_parsed, "tax_data")
+merged_taxo_parsed$data$tax_abund <- calc_taxon_abund(merged_taxo_parsed, "tax_data")
+merged_taxo_parsed$data$n_samples <- calc_n_samples(merged_taxo_parsed, data = "tax_data")
+# 由于 Miseq 和pacbio的样品存在一些共同，这里只对在两种平台都进行测序的116个样本进行分析
+common_samples_id <- samples_info$sample_id[samples_info$groups %in% c("Pacbio", "Miseq")]
+common_samples_groups <- samples_info$groups[samples_info$groups %in% c("Pacbio", "Miseq")]
+# 计算common_samples_id样本的taxo rareferaction 数据
+merged_taxo_parsed$data$comsamp_abund_rarefied <- rarefy_obs(merged_taxo_parsed, "tax_data", cols = common_samples_id)
+merged_taxo_parsed$data$comsamp_tax_abund_rarefied <- calc_taxon_abund(merged_taxo_parsed, "comsamp_abund_rarefied", cols = common_samples_id)
+# 计算common_samples_id样本的taxo在各组样本中出现的样本数
+merged_taxo_parsed$data$comsamp_tax_abund <- calc_taxon_abund(merged_taxo_parsed, "tax_data", cols = common_samples_id)
+merged_taxo_parsed$data$comsamp_tax_props <- calc_taxon_abund(merged_taxo_parsed, "obs_props", cols = common_samples_id)
+merged_taxo_parsed$data$comsamp_tax_occ <- calc_n_samples(merged_taxo_parsed, "comsamp_tax_abund", groups = common_samples_groups, cols = common_samples_id)
+merged_taxo_parsed$data$comsamp_tax_props_groupmeans <- calc_group_stat(merged_taxo_parsed, "comsamp_tax_props", mean, groups = common_samples_groups, cols = common_samples_id)
+merged_taxo_parsed$data$comsamp_tax_props_groupsd <- calc_group_stat(merged_taxo_parsed, "comsamp_tax_props", sd, groups = common_samples_groups, cols = common_samples_id)
+
+compafun <- function(abund_1, abund_2) {
+  log_ratio <- log2(median(abund_1) / median(abund_2))
+  if (is.nan(log_ratio)) {
+    log_ratio <- 0
+  }
+  list(log2_median_ratio = log_ratio,
+    median_diff = median(abund_1) - median(abund_2),
+    mean_diff = mean(abund_1) - mean(abund_2),
+    mean_diff_ration = mean(abund_1) / mean(abund_2),
+    wilcox_p_value = wilcox.test(abund_1, abund_2)$p.value,
+    ttest_p_value = t.test(abund_1, abund_2)$p.value)
+}
+
+merged_taxo_parsed$data$diff_table <- compare_groups(merged_taxo_parsed,
+                                      dataset = "comsamp_tax_abund",
+                                      cols = common_samples_id, # What columns of sample data to use
+                                      groups = common_samples_groups) # What category each sample is assigned to
+merged_taxo_parsed$data$diff_table_taxprops <- compare_groups(merged_taxo_parsed,
+                                      dataset = "comsamp_tax_props",
+                                      cols = common_samples_id, # What columns of sample data to use
+                                      groups = common_samples_groups,
+                                      func = compafun)
+merged_taxo_parsed$data$diff_table_taxprops$fdr_wilcox_p_value <- p.adjust(merged_taxo_parsed$data$diff_table_taxprops$wilcox_p_value, method = "fdr")
+merged_taxo_parsed$data$diff_table_taxprops$bfn_ttest_p_value <- p.adjust(merged_taxo_parsed$data$diff_table_taxprops$ttest_p_value, method = "bonferroni")
+
+set.seed(1)
+heat_tree(merged_taxo_parsed,
+          node_label = taxon_names,
+          node_size = 0.5, # n_obs is a function that calculates, in this case, the number of OTUs per taxon
+          node_color = log2_median_ratio, # A column from `obj$data$diff_table`
+          node_color_interval = c(-4, 4), # The range of `log2_median_ratio` to display
+          node_color_range = diverging_palette(), # The color palette used
+          node_size_axis_label = "OTU count",
+          node_color_axis_label = "Log 2 ratio of median proportions",
+          layout = "davidson-harel", # The primary layout algorithm
+          initial_layout = "reingold-tilford",
+          output_file = "differential_heat_tree_taxabund.pdf") # The layout algorithm that initializes node locations
+set.seed(1)
+heat_tree(merged_taxo_parsed,
+          node_label = taxon_names,
+          node_size = 0.5, # n_obs is a function that calculates, in this case, the number of OTUs per taxon
+          node_color = merged_taxo_parsed$data$diff_table_taxprops$log2_median_ratio,
+          node_color_interval = c(-4, 4), # The range of `log2_median_ratio` to display
+          node_color_range = diverging_palette(), # The color palette used
+          node_color_axis_label = "Log 2 ratio of median proportions",
+          layout = "davidson-harel", # The primary layout algorithm
+          initial_layout = "reingold-tilford",
+          output_file = "differential_heat_tree_taxprops.pdf")
+
+## 绘制116个在双平台测序的 *所有* taxo在不同分类水平（用颜色区分）的相关系数
+colorssets <- unlist(merged_taxo_parsed$taxon_ranks())
+colorssets <- as.character(colorssets)
+colsrow <- c("#c12e34", "#e6b600", "#0098d9", "#2b821d", "#005eaa", "#339ca8", "#cda819", "#32a487")
+tmpsets <- unique(colorssets)
+for (i in 1:length(tmpsets)) {
+  colorssets[which(colorssets == tmpsets[i])] <- colsrow[i]
+}
+
+basestpe = length(common_samples_id) / 2
+figs_list <- list()
+for (i in 2:(basestpe + 1)) {
+  pb_tmpX <- merged_taxo_parsed$data$comsamp_tax_props[, i]
+  mq_tmpy <- merged_taxo_parsed$data$comsamp_tax_props[, i + basestpe]
+  main <- paste(names(pb_tmpX)," in PacBio & Miseq", sep = "")
+  get_ggpoint(pb_tmpX, mq_tmpy, col = colorssets, main = main, Single = TRUE, mergeif = FALSE)
+  tm_figs <- get_ggpoint(pb_tmpX, mq_tmpy, col = colorssets, main = main, Single = FALSE, mergeif = TRUE)
+  figs_list[[length(figs_list) + 1]] <- tm_figs
+  #print(main)
+}
+library("cowplot")
+library("Cairo")
+CairoPDF(file = "Merged.pdf", width = 30, height = 30)
+par(mfcol = c(11, 11))
+plot_grid(plotlist = figs_list)
+dev.off()
+
+```
+
+第二部分 Functions.r 是主要的收集物种信息和绘图的函数的脚本：
+
+```r
+library('readxl')
+library('taxonomizr')
+library('tidyverse')
+library('metacoder')
+library("cowplot")
+library('ggplot2')
+library('ggforce')
+library("Cairo")
+
+# 读取excel数据
+library('readxl')
+# 提取NCBI taxonomy 信息
+library('taxonomizr')
+# 整理数据
+library('tidyverse')
+
+## 设置静态变量
+taxo_levels <- c("superkingdom", "phylum", "class", "order", "family", "genus", "species")
+taxo_levels_short <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
+# taxonomizr 包使用的 NCBI taxonomy 数据库(sql格式)
+nameNodesqlfile <- "~/nameNode.sqlite"
+
+
+
+## 用来获取NCBI taxonomy信息
+get_ncbi_taxonamy <- function(taxolist, nameNodesqlfile = "~/nameNode.sqlite") {
+  len <- length(taxo_levels)
+  taxoinfo_array <- data.frame(t(1:len))
+  colnames(taxoinfo_array) <- taxo_levels
+  taxoinfo_array <- taxoinfo_array[-1,]
+  tatol_taxo_NO <- 0
+  ncbi_taxoedNO <- 0
+  unkown_taxo <- c()
+  for (ele in taxolist) {
+
+    tatol_taxo_NO <- tatol_taxo_NO + 1
+    # 将 传入 的数据按照一般的记录习惯进行狠个，这里只是用属genus或以上的物种信息查询
+    # 因为有很多疑似新种，并且学名太长，存在更大可能的记录错误导致无法查询信息
+    slfe_or_above_taxo <- str_split(ele, " |_", simplify = T) # 按照 空格 和/或 下划线分割
+    taxoids <- getId(slfe_or_above_taxo[1], sqlFile = nameNodesqlfile, onlyScientific = FALSE)
+
+    if (taxoids != "") {
+      taxoids <- str_split(taxoids, ",", simplify = T)
+      tempinfo <- getTaxonomy(taxoids[1], sqlFile = nameNodesqlfile, desiredTaxa = taxo_levels)
+      #cat(taxoids[1], "\t", ele, "\t", tempinfo, "\n")
+
+      #判断是否为 种水平 species 的情况： 要求genus 非NA，并且slfe_or_above_taxo的长度不小于2
+      genus_level <- which(taxo_levels == "genus")
+      if (as.logical((!is.na(tempinfo[genus_level])) && (ncol(slfe_or_above_taxo) >= 2))) {
+        #print (ele)
+        tempinfo[len] <- ele
+      }
+      #print (tempinfo)
+      if (!is.na(tempinfo[1])) {
+        taxoinfo_array[nrow(taxoinfo_array) + 1, 1:ncol(taxoinfo_array)] <- tempinfo
+        #cat(taxoids[1], "\t", ele, "\t", tempinfo, "\n")
+      } else {
+        # 记录 这一步在NCBI种找不到 taxonomy 信息的条目
+        taxoinfo_array[nrow(taxoinfo_array) + 1, 1:ncol(taxoinfo_array)] <- rep(NA, 7)
+        unkown_taxo <- c(unkown_taxo, ele)
+      }
+    } else {
+      # 记录 这一步在NCBI种找不到 taxonomy 信息的条目
+      taxoinfo_array[nrow(taxoinfo_array) + 1, 1:ncol(taxoinfo_array)] <- rep(NA, 7)
+      unkown_taxo <- c(unkown_taxo, ele)
+    }
+  }
+  return(list(taxoinfo_array, unkown_taxo))
+}
+
+# 如果不用NCBI数据统一，而直接使用表格中的Silva taxonomy 信息，这对其进行解构
+get_silva_taxonamy <- function(taxo_levels_list) {
+  len <- length(taxo_levels)
+  slv_taxoinfo_array <- data.frame(t(1:len))
+  colnames(slv_taxoinfo_array) <- taxo_levels
+  tatol_taxo_NO <- 0
+  ncbi_taxoedNO <- 0
+  for (ele in taxo_levels_list) {
+    tatol_taxo_NO <- tatol_taxo_NO + 1
+    ele <- str_replace_all(ele, " +", "") #替换空格
+    tmp_pase <- parse_tax_data(ele, class_sep = ";")
+    slv_taxoinfo_array[tatol_taxo_NO, 1:length(tmp_pase$taxonomy_table())] <- tmp_pase$taxonomy_table()
+  }
+  return(slv_taxoinfo_array)
+}
+
+miseq_taxo_paser <- function(taxo_levels_list, redundancy.method = "Best") {
+  output_taxo_levels_list <- c()
+  if (redundancy.method == "Best") {
+    for (ele in taxo_levels_list) {
+      tmp_taxos <- str_split(ele, ";", simplify = TRUE)
+      if (length(grep("OPU_?[\\d]", tmp_taxos[1], ignore.case = TRUE, perl = TRUE)) == 0) {
+        output_taxo_levels_list <- c(output_taxo_levels_list, tmp_taxos[1])
+        #cat(tmp_taxos[1], "\n")
+      } else {
+        output_taxo_levels_list <- c(output_taxo_levels_list, ele)
+      }
+    }
+  } else if ((redundancy.method == "LCA")) {
+    print("Unuseing function~~")
+  }
+  return(output_taxo_levels_list)
+}
+
+
+## 直接解析GreenGene格式的信息
+miseq_taxo_paser2 <- function(taxo_levels_list) {
+  library("taxa")
+  output_taxo_levels_list <- c()
+  for (ele in taxo_levels_list) {
+    tmp_taxos <- parse_tax_data(ele, class_sep = ";", class_regex = "[kpcofgs]__(.*)")
+    taxonames <- as.character(unlist(as.data.frame(tmp_taxos$taxon_names())))
+    taxonames<-str_replace_all(taxonames,"_+"," ")
+    taxoids <- getId(taxonames, sqlFile = nameNodesqlfile, onlyScientific = FALSE)
+    last_taxon <- taxonames[which(taxoids != "")][length(which(taxoids != ""))]
+    output_taxo_levels_list <- c(output_taxo_levels_list, last_taxon)
+  }
+  return(output_taxo_levels_list)
+}
+
+
+### 绘制指定水平的物种鉴定 Venn 图 函数
+get_venn_diagram <- function(pb_taxo, mq_taxo, complevel = taxo_levels[6:7], taxo_levels = taxo_levels, alpha = 0.75) {
+  library("VennDiagram")
+  for (ele in complevel) {
+    i <- which(taxo_levels == ele)
+    pb_tmp_level_taxos <- unique(na.exclude(pb_taxo[, i]))
+    mq_tmp_level_taxos <- unique(na.exclude(mq_taxo[, i]))
+    tmp_list <- list(
+      Pacbio = pb_tmp_level_taxos,
+      Miseq = mq_tmp_level_taxos)
+    maintitle <- paste("Venn figure at ", ele, " level  ", sep = "")
+    figname <- paste(ele, "_level_venn_scaled", ".tiff", sep = "")
+    venn.plot <- venn.diagram(tmp_list,
+      category = c("PacBio", "Miseq"),
+      col = c("#3E638B"),
+      fill = c("#ADDB7D", "#8ECCF2"),
+      euler.d = TRUE,
+      filename = figname,
+      cex = 1.2,
+      cat.pos = 0,
+      imagetype = "tiff",
+      alpha = alpha,
+      lwd = 2, hyper.test = TRUE,
+      compression = 'lzw', fontface = "italic",
+      cat.cex = 1.2,
+      cat.fontface = "bold",
+      print.mode = c("raw", "percent"),
+      sigdigs = 4,
+      main = maintitle,
+      main.cex = 2,
+      main.fontface = "bold",
+  )
+  }
+}
+
+get_venn_info <- function(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels) {
+  library(gplots)
+  out_list <- list()
+  for (ele in complevel) {
+    i <- which(taxo_levels == ele)
+    pb_tmp_level_taxos <- unique(na.exclude(pb_taxo[, i]))
+    mq_tmp_level_taxos <- unique(na.exclude(mq_taxo[, i]))
+    tmp_list <- list(
+      Pacbio = pb_tmp_level_taxos,
+      Miseq = mq_tmp_level_taxos)
+    venn_tab <- venn(tmp_list, show.plot = FALSE)
+    out_list <- c(out_list, list(i = attr(venn_tab, "intersections")))
+  }
+  names(out_list) <- complevel
+  return(out_list)
+}
+
+get_lineage <- function(pbmq_taxo) {
+  out_lineage_tab <- c()
+  for (i in 1:nrow(pbmq_taxo)) {
+    str_tmp <- ""
+    for (j in 1:length(pbmq_taxo[i, ])) {
+      ele <- pbmq_taxo[i, j]
+      if (!is.na(ele)) {
+        str_tmp = paste(str_tmp, paste(ele, sep = ""), sep = "")
+        str_tmp <- paste(str_tmp, ";", sep = "")
+      }
+    }
+    str_tmp <- str_replace(str_tmp, ";$", "")
+    out_lineage_tab <- c(out_lineage_tab, str_tmp)
+  }
+  return(out_lineage_tab)
+}
+
+
+get_ggplotlines <- function(x, y, main = "Test_figs") {
+  library('ggplot2')
+  theme_set(theme_minimal())
+  x <- as.numeric(unlist(x))
+  y <- as.numeric(unlist(y))
+  figs <- ggplot(x = x, y = y) +
+    geom_line(aes(x = 1:length(x), y = x), color = "darkred") +
+    geom_line(aes(x = 1:length(y), y = y), color = "steelblue", linetype = "twodash")
+  ggsave(filename = paste(main, ".pdf", sep = ""), device = "pdf", plot = figs)
+}
+
+get_ggpoint <- function(x, y, col, main = "Test_figs", mergeif = TRUE, Single = TRUE) {
+  library('ggplot2')
+  library('ggforce')
+  x <- as.numeric(unlist(x))
+  y <- as.numeric(unlist(y))
+  cor_val <- cor(x, y)
+  lm_val <- lm(y ~ x)
+  Constant <- lm_val$coefficients[2]
+  data <- as.data.frame(cbind(x, y))
+  if (Single) {
+    figs <- ggplot(data, aes(x = x, y = y)) + ggtitle(main) +
+    xlab("PacBio|Taxonomy abundance") + ylab("Miseq|Taxonomy abundance") +
+    geom_point(shape = 21, size = 1.5, colour = "black", fill = col, alpha = 0.8) +
+    geom_smooth(method = "lm", se = TRUE, colour = "blue", fill = "blue", alpha = 0.3, size = 1.1) +
+    geom_vline(aes(xintercept = mean(x)), linetype = 2) +
+    geom_hline(aes(yintercept = mean(y)), linetype = 2) +
+    geom_point(aes(mean(x), mean(y)), shape = 16, size = 0.5, colour = "green", alpha = 0.5) +
+    facet_zoom(xlim = c(0, 0.05), ylim = c(0, 0.05), split = TRUE) +
+    annotate("text", x = 0.325, y = 0.85, label = paste("r=", round(cor_val, 2), "\nConstant=", round(Constant, 3), sep = ""),
+    colour = "red", size = 2, fontface = "bold") +
+    theme_bw()
+    ggsave(filename = paste(main, ".pdf", sep = ""), device = "pdf", plot = figs)
+  }
+  if (mergeif) {
+    figs <- ggplot(data, aes(x = x, y = y)) + ggtitle(main) +
+    xlab("PacBio|Taxonomy abundance") + ylab("Miseq|Taxonomy abundance") +
+    geom_point(shape = 21, size = 1, colour = "black", fill = col, alpha = 0.8) +
+    geom_smooth(method = "lm", se = TRUE, colour = "blue", fill = "blue", alpha = 0.3, size = 0.2) +
+    geom_vline(aes(xintercept = mean(x)), linetype = 2) +
+    geom_hline(aes(yintercept = mean(y)), linetype = 2) +
+    geom_point(aes(mean(x), mean(y)), shape = 16, size = 0.3, colour = "green", alpha = 0.5) +
+    annotate("text", x = 0.325, y = 0.85, label = paste("r=", round(cor_val, 2), "\nConstant=", round(Constant, 3), sep = ""),
+    colour = "red", size = 1, fontface = "bold") +
+    xlim(-0.01, 1) + ylim(-0.01, 1) +
+    theme(plot.title = element_text(size = 5))
+    theme_bw() +
+    return(figs)
+  }
+}
+```

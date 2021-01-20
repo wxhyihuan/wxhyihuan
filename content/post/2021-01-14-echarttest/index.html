@@ -1,0 +1,211 @@
+---
+title: Echarttest
+author: wxhyihuan
+date: '2021-01-14'
+slug: echarttest
+categories:
+  - R
+tags:
+  - echarts
+  - plot
+draft: false
+
+---
+
+<script src="{{< blogdown/postref >}}index_files/htmlwidgets/htmlwidgets.js"></script>
+<script src="{{< blogdown/postref >}}index_files/echarts4r/echarts-en.min.js"></script>
+<script src="{{< blogdown/postref >}}index_files/echarts4r/ecStat.min.js"></script>
+<script src="{{< blogdown/postref >}}index_files/echarts4r/dataTool.min.js"></script>
+<script src="{{< blogdown/postref >}}index_files/echarts4r-binding/echarts4r.js"></script>
+
+
+<p>Welcome to <strong><a href="https://echarts4r.john-coene.com/">echarts4r</a></strong> and <strong><a href="https://echarts.apache.org/en/index.html">Apache ECharts</a></strong>, let’s explore the package together.</p>
+<p>A example for <strong>echarts4r</strong> is show below:</p>
+<pre class="r"><code>library(&quot;echarts4r&quot;)
+library(&quot;dplyr&quot;)
+df &lt;- state.x77 %&gt;% 
+  as.data.frame() %&gt;% 
+  tibble::rownames_to_column(&quot;State&quot;)
+df %&gt;% 
+  e_charts(State) %&gt;% # initialise and set x
+  e_line(Population) %&gt;%  # add a line
+  e_area(Income) # add area</code></pre>
+<div class="figure" style="text-align: center"><span id="fig:figecharts"></span>
+<div id="htmlwidget-1" style="width:100%;height:500px;" class="echarts4r html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"theme":"","tl":false,"draw":true,"renderer":"canvas","events":[],"buttons":[],"opts":{"yAxis":[{"show":true}],"xAxis":[{"data":["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"],"type":"category","boundaryGap":true}],"legend":{"data":["Population","Income"]},"series":[{"data":[{"value":["Alabama"," 3615"]},{"value":["Alaska","  365"]},{"value":["Arizona"," 2212"]},{"value":["Arkansas"," 2110"]},{"value":["California","21198"]},{"value":["Colorado"," 2541"]},{"value":["Connecticut"," 3100"]},{"value":["Delaware","  579"]},{"value":["Florida"," 8277"]},{"value":["Georgia"," 4931"]},{"value":["Hawaii","  868"]},{"value":["Idaho","  813"]},{"value":["Illinois","11197"]},{"value":["Indiana"," 5313"]},{"value":["Iowa"," 2861"]},{"value":["Kansas"," 2280"]},{"value":["Kentucky"," 3387"]},{"value":["Louisiana"," 3806"]},{"value":["Maine"," 1058"]},{"value":["Maryland"," 4122"]},{"value":["Massachusetts"," 5814"]},{"value":["Michigan"," 9111"]},{"value":["Minnesota"," 3921"]},{"value":["Mississippi"," 2341"]},{"value":["Missouri"," 4767"]},{"value":["Montana","  746"]},{"value":["Nebraska"," 1544"]},{"value":["Nevada","  590"]},{"value":["New Hampshire","  812"]},{"value":["New Jersey"," 7333"]},{"value":["New Mexico"," 1144"]},{"value":["New York","18076"]},{"value":["North Carolina"," 5441"]},{"value":["North Dakota","  637"]},{"value":["Ohio","10735"]},{"value":["Oklahoma"," 2715"]},{"value":["Oregon"," 2284"]},{"value":["Pennsylvania","11860"]},{"value":["Rhode Island","  931"]},{"value":["South Carolina"," 2816"]},{"value":["South Dakota","  681"]},{"value":["Tennessee"," 4173"]},{"value":["Texas","12237"]},{"value":["Utah"," 1203"]},{"value":["Vermont","  472"]},{"value":["Virginia"," 4981"]},{"value":["Washington"," 3559"]},{"value":["West Virginia"," 1799"]},{"value":["Wisconsin"," 4589"]},{"value":["Wyoming","  376"]}],"yAxisIndex":0,"xAxisIndex":0,"name":"Population","type":"line","coordinateSystem":"cartesian2d"},{"data":[{"value":["Alabama","3624"]},{"value":["Alaska","6315"]},{"value":["Arizona","4530"]},{"value":["Arkansas","3378"]},{"value":["California","5114"]},{"value":["Colorado","4884"]},{"value":["Connecticut","5348"]},{"value":["Delaware","4809"]},{"value":["Florida","4815"]},{"value":["Georgia","4091"]},{"value":["Hawaii","4963"]},{"value":["Idaho","4119"]},{"value":["Illinois","5107"]},{"value":["Indiana","4458"]},{"value":["Iowa","4628"]},{"value":["Kansas","4669"]},{"value":["Kentucky","3712"]},{"value":["Louisiana","3545"]},{"value":["Maine","3694"]},{"value":["Maryland","5299"]},{"value":["Massachusetts","4755"]},{"value":["Michigan","4751"]},{"value":["Minnesota","4675"]},{"value":["Mississippi","3098"]},{"value":["Missouri","4254"]},{"value":["Montana","4347"]},{"value":["Nebraska","4508"]},{"value":["Nevada","5149"]},{"value":["New Hampshire","4281"]},{"value":["New Jersey","5237"]},{"value":["New Mexico","3601"]},{"value":["New York","4903"]},{"value":["North Carolina","3875"]},{"value":["North Dakota","5087"]},{"value":["Ohio","4561"]},{"value":["Oklahoma","3983"]},{"value":["Oregon","4660"]},{"value":["Pennsylvania","4449"]},{"value":["Rhode Island","4558"]},{"value":["South Carolina","3635"]},{"value":["South Dakota","4167"]},{"value":["Tennessee","3821"]},{"value":["Texas","4188"]},{"value":["Utah","4022"]},{"value":["Vermont","3907"]},{"value":["Virginia","4701"]},{"value":["Washington","4864"]},{"value":["West Virginia","3617"]},{"value":["Wisconsin","4468"]},{"value":["Wyoming","4566"]}],"yAxisIndex":0,"xAxisIndex":0,"name":"Income","type":"line","coordinateSystem":"cartesian2d","areaStyle":[]}]},"dispose":true},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 1: asd
+</p>
+</div>
+<pre class="r"><code>df %&gt;% 
+e_charts(State) %&gt;%  
+e_pie(Income)</code></pre>
+<div class="figure" style="text-align: center"><span id="fig:figecharts"></span>
+<div id="htmlwidget-2" style="width:100%;height:500px;" class="echarts4r html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"theme":"","tl":false,"draw":true,"renderer":"canvas","events":[],"buttons":[],"opts":{"legend":{"data":["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"]},"series":[{"name":"Income","type":"pie","data":[{"value":3624,"name":"Alabama"},{"value":6315,"name":"Alaska"},{"value":4530,"name":"Arizona"},{"value":3378,"name":"Arkansas"},{"value":5114,"name":"California"},{"value":4884,"name":"Colorado"},{"value":5348,"name":"Connecticut"},{"value":4809,"name":"Delaware"},{"value":4815,"name":"Florida"},{"value":4091,"name":"Georgia"},{"value":4963,"name":"Hawaii"},{"value":4119,"name":"Idaho"},{"value":5107,"name":"Illinois"},{"value":4458,"name":"Indiana"},{"value":4628,"name":"Iowa"},{"value":4669,"name":"Kansas"},{"value":3712,"name":"Kentucky"},{"value":3545,"name":"Louisiana"},{"value":3694,"name":"Maine"},{"value":5299,"name":"Maryland"},{"value":4755,"name":"Massachusetts"},{"value":4751,"name":"Michigan"},{"value":4675,"name":"Minnesota"},{"value":3098,"name":"Mississippi"},{"value":4254,"name":"Missouri"},{"value":4347,"name":"Montana"},{"value":4508,"name":"Nebraska"},{"value":5149,"name":"Nevada"},{"value":4281,"name":"New Hampshire"},{"value":5237,"name":"New Jersey"},{"value":3601,"name":"New Mexico"},{"value":4903,"name":"New York"},{"value":3875,"name":"North Carolina"},{"value":5087,"name":"North Dakota"},{"value":4561,"name":"Ohio"},{"value":3983,"name":"Oklahoma"},{"value":4660,"name":"Oregon"},{"value":4449,"name":"Pennsylvania"},{"value":4558,"name":"Rhode Island"},{"value":3635,"name":"South Carolina"},{"value":4167,"name":"South Dakota"},{"value":3821,"name":"Tennessee"},{"value":4188,"name":"Texas"},{"value":4022,"name":"Utah"},{"value":3907,"name":"Vermont"},{"value":4701,"name":"Virginia"},{"value":4864,"name":"Washington"},{"value":3617,"name":"West Virginia"},{"value":4468,"name":"Wisconsin"},{"value":4566,"name":"Wyoming"}]}]},"dispose":true},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 1: asd
+</p>
+</div>
+<p>A example for <strong><a href="https://echarts.apache.org/en/index.html">Apache ECharts</a></strong> is also show below:</p>
+<pre class="html"><code>&lt;div id=&quot;main&quot; style=&quot;width: 600px;height:400px;&quot;&gt;&lt;/div&gt;</code></pre>
+<pre class="js"><code>       // 基于准备好的dom，初始化echarts实例
+var myChart = echarts.init(document.getElementById(&#39;main&#39;));
+option = {
+    backgroundColor: &#39;#2c343c&#39;,
+    visualMap: {
+        show: false,
+        min: 80,
+        max: 600,
+        inRange: {
+            colorLightness: [0, 1]
+        }
+    },
+    series : [
+        {
+            name: &#39;访问来源&#39;,
+            type: &#39;pie&#39;,
+            radius: &#39;55%&#39;,
+            data:[
+                {value:235, name:&#39;视频广告&#39;},
+                {value:274, name:&#39;联盟广告&#39;},
+                {value:310, name:&#39;邮件营销&#39;},
+                {value:335, name:&#39;直接访问&#39;},
+                {value:400, name:&#39;搜索引擎&#39;}
+            ],
+            roseType: &#39;angle&#39;,
+            label: {
+                normal: {
+                    textStyle: {
+                        color: &#39;rgba(255, 255, 255, 0.3)&#39;
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    lineStyle: {
+                        color: &#39;rgba(255, 255, 255, 0.3)&#39;
+                    }
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: &#39;#c23531&#39;,
+                    shadowBlur: 200,
+                    shadowColor: &#39;rgba(0, 0, 0, 0.5)&#39;
+                }
+            }
+        }
+    ]
+};
+// 使用刚指定的配置项和数据显示图表。
+myChart.setOption(option);</code></pre>
+<script type="text/javascript">
+       // 基于准备好的dom，初始化echarts实例
+var myChart = echarts.init(document.getElementById('main'));
+option = {
+    backgroundColor: '#2c343c',
+    visualMap: {
+        show: false,
+        min: 80,
+        max: 600,
+        inRange: {
+            colorLightness: [0, 1]
+        }
+    },
+    series : [
+        {
+            name: '访问来源',
+            type: 'pie',
+            radius: '55%',
+            data:[
+                {value:235, name:'视频广告'},
+                {value:274, name:'联盟广告'},
+                {value:310, name:'邮件营销'},
+                {value:335, name:'直接访问'},
+                {value:400, name:'搜索引擎'}
+            ],
+            roseType: 'angle',
+            label: {
+                normal: {
+                    textStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    lineStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: '#c23531',
+                    shadowBlur: 200,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+// 使用刚指定的配置项和数据显示图表。
+myChart.setOption(option);
+</script>
+<div id="main" style="width: 600px;height:400px;">
+
+</div>
+<script type="text/javascript">
+       // 基于准备好的dom，初始化echarts实例
+var myChart = echarts.init(document.getElementById('main'));
+option = {
+    backgroundColor: '#2c343c',
+    visualMap: {
+        show: false,
+        min: 80,
+        max: 600,
+        inRange: {
+            colorLightness: [0, 1]
+        }
+    },
+    series : [
+        {
+            name: '访问来源',
+            type: 'pie',
+            radius: '55%',
+            data:[
+                {value:235, name:'视频广告'},
+                {value:274, name:'联盟广告'},
+                {value:310, name:'邮件营销'},
+                {value:335, name:'直接访问'},
+                {value:400, name:'搜索引擎'}
+            ],
+            roseType: 'angle',
+            label: {
+                normal: {
+                    textStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    lineStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: '#c23531',
+                    shadowBlur: 200,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+// 使用刚指定的配置项和数据显示图表。
+myChart.setOption(option);
+</script>

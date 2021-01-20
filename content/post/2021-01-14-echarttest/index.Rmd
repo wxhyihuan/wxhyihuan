@@ -1,0 +1,147 @@
+---
+title: Echarttest
+author: wxhyihuan
+date: '2021-01-14'
+slug: echarttest
+categories:
+  - R
+tags:
+  - echarts
+  - plot
+draft: false
+
+---
+
+Welcome to **[echarts4r]** and **[Apache ECharts]**, let’s explore the package together.
+
+A example for **echarts4r**  is show below:
+```{r figecharts, message = FALSE,warning=FALSE, out.width="49%", fig.cap ='asd',fig.align='center',fig.keep="high" }
+library("echarts4r")
+library("dplyr")
+df <- state.x77 %>% 
+  as.data.frame() %>% 
+  tibble::rownames_to_column("State")
+df %>% 
+  e_charts(State) %>% # initialise and set x
+  e_line(Population) %>%  # add a line
+  e_area(Income) # add area
+
+df %>% 
+e_charts(State) %>%  
+e_pie(Income)
+```
+
+A example for **[Apache ECharts]**  is also show below:
+``` html
+<div id="main" style="width: 600px;height:400px;"></div>
+``` 
+
+```{js echo=TRUE }
+       // 基于准备好的dom，初始化echarts实例
+var myChart = echarts.init(document.getElementById('main'));
+option = {
+    backgroundColor: '#2c343c',
+    visualMap: {
+        show: false,
+        min: 80,
+        max: 600,
+        inRange: {
+            colorLightness: [0, 1]
+        }
+    },
+    series : [
+        {
+            name: '访问来源',
+            type: 'pie',
+            radius: '55%',
+            data:[
+                {value:235, name:'视频广告'},
+                {value:274, name:'联盟广告'},
+                {value:310, name:'邮件营销'},
+                {value:335, name:'直接访问'},
+                {value:400, name:'搜索引擎'}
+            ],
+            roseType: 'angle',
+            label: {
+                normal: {
+                    textStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    lineStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: '#c23531',
+                    shadowBlur: 200,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+// 使用刚指定的配置项和数据显示图表。
+myChart.setOption(option);
+```
+<div id="main" style="width: 600px;height:400px;"></div>
+```{js echo=FALSE}
+       // 基于准备好的dom，初始化echarts实例
+var myChart = echarts.init(document.getElementById('main'));
+option = {
+    backgroundColor: '#2c343c',
+    visualMap: {
+        show: false,
+        min: 80,
+        max: 600,
+        inRange: {
+            colorLightness: [0, 1]
+        }
+    },
+    series : [
+        {
+            name: '访问来源',
+            type: 'pie',
+            radius: '55%',
+            data:[
+                {value:235, name:'视频广告'},
+                {value:274, name:'联盟广告'},
+                {value:310, name:'邮件营销'},
+                {value:335, name:'直接访问'},
+                {value:400, name:'搜索引擎'}
+            ],
+            roseType: 'angle',
+            label: {
+                normal: {
+                    textStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            labelLine: {
+                normal: {
+                    lineStyle: {
+                        color: 'rgba(255, 255, 255, 0.3)'
+                    }
+                }
+            },
+            itemStyle: {
+                normal: {
+                    color: '#c23531',
+                    shadowBlur: 200,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }
+    ]
+};
+// 使用刚指定的配置项和数据显示图表。
+myChart.setOption(option);
+```
+[echarts4r]:https://echarts4r.john-coene.com/
+[Apache ECharts]:https://echarts.apache.org/en/index.html
