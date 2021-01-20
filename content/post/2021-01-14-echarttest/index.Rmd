@@ -1,5 +1,5 @@
 ---
-title: Echarttest
+title: Echart Example
 author: wxhyihuan
 date: '2021-01-14'
 slug: echarttest
