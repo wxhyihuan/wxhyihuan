@@ -16,6 +16,7 @@ tags:
 
 [metacoder]:https://github.com/grunwaldlab/metacoder
 第一部分 work.r 是主要的调用整理数据和绘图函数的流程脚本：
+`r emo::ji("beard")`
 ``` r
 # Script name: work.r
 #加载函数脚本
