@@ -20,8 +20,8 @@ tags:
 ``` r
 # Script name: work.r
 #加载函数脚本
-source("~/NameChecked/Functions.R")
-
+source("~/Functions.R")
+# 读取Excel表格中的原始数据文件
 excelfile<-"~/PacBiovsMiseq.xlsx"
 
 Pb_exc1 <- read_excel(excelfile, sheet = 1)
@@ -33,7 +33,7 @@ pb_taxoinfo_output <- get_ncbi_taxonamy(taxolist = Pb_exc1$Taxon)
 #miseq_taxopasered <- miseq_taxo_paser(taxo_levels_list = Ms_exc1$Taxo)
 miseq_taxopasered <- miseq_taxo_paser2(taxo_levels_list = Ms_exc1$Taxon)
 mq_taxoinfo_output <- get_ncbi_taxonamy(taxolist = miseq_taxopasered)
-save.image()
+save.image()  #保存镜像数据
 
 pb_taxo <- pb_taxoinfo_output[[1]]
 mq_taxo <- mq_taxoinfo_output[[1]]
@@ -44,9 +44,16 @@ mq_unkown <- mq_taxoinfo_output[[2]]
 ## 01 绘制指定水平的物种鉴定 Venn 图
 get_venn_diagram(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels)
 
-
 ## 02 获取不同水平的物种交差集( Venn )信息
 taxo_venn_at_diff_level <- get_venn_info(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels)
+
+```
+<p align=center>
+<img src="https://s3.ax1x.com/2021/01/26/sXiZ5j.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+</p>
+
+``` r
 
 ## 03 将与NCBI taxonomy 统一后的分类信息与丰度表格进行整合得到 OTU_Table和 Taxo mapping数据对象，以及根据NCBI taxonomy 信息将
 # 两种平台的样本数据合并（注意不是将相同OPU/OTU/Taxo的值相加），主要是将样本信息合并在一张表，合成一个包含所有taxonomy在两个平台中的丰度
@@ -135,7 +142,15 @@ heat_tree(merged_taxo_parsed,
           layout = "davidson-harel", # The primary layout algorithm
           initial_layout = "reingold-tilford",
           output_file = "merged_taxo_parsed4MiSeq.pdf")
+```
+<p align=center>
+<img src="https://s3.ax1x.com/2021/01/26/sXibJs.png" 
+width="50%"  alt="Multi-input and multi-output models" >
+<img src="https://s3.ax1x.com/2021/01/26/sXVva8.png" 
+width="50%"  alt="Multi-input and multi-output models" >
+</p>
 
+``` r
 ##05 计算各个样品数据的相对丰度obs_props 和 各个物种的丰度tax_abund，各个taxo在各组样本中出现的样本数n_samples
 merged_taxo_parsed$data$obs_props <- calc_obs_props(merged_taxo_parsed, "tax_data")
 merged_taxo_parsed$data$tax_abund <- calc_taxon_abund(merged_taxo_parsed, "tax_data")
@@ -230,6 +245,66 @@ plot_grid(plotlist = figs_list)
 dev.off()
 
 ```
+<p align=center>
+<img src="https://s3.ax1x.com/2021/01/26/sXkAhj.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+<img src="https://s3.ax1x.com/2021/01/26/sXkkNQ.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+</p>
+
+```r 
+##08 绘制116样本在KPCOFG水平的correlaton constants 柱形图
+samples116_CorConstants_difflevels <- list()
+for (ele in names(colors_diff_levels)) {
+  temp_comsamp_tax_props <- merged_taxo_parsed$data$comsamp_tax_props[which(colorssets == ele),]
+  basestpe = length(common_samples_id) / 2
+  tmp_figs_list <- list()
+  for (i in 2:(basestpe + 1)) {
+    pb_tmpX <- as.numeric(unlist(temp_comsamp_tax_props[, i]))
+    mq_tmpy <- as.numeric(unlist(temp_comsamp_tax_props[, i + basestpe]))
+    lm_val <- lm(mq_tmpy ~ pb_tmpX)
+    corConstant <- lm_val$coefficients[2]
+    tmp_figs_list[[length(tmp_figs_list) + 1]] <- corConstant
+    #print(main)
+  }
+  samples116_CorConstants_difflevels[[length(samples116_CorConstants_difflevels) + 1]] <- tmp_figs_list
+}
+samples116_CorConstants_difflevels_df <- as.data.frame(matrix(unlist(samples116_CorConstants_difflevels), nrow = length(unlist(samples116_CorConstants_difflevels[1]))))
+colnames(samples116_CorConstants_difflevels_df) <- taxo_levels[1:ncol(samples116_CorConstants_difflevels_df)]
+tmpcolors <- samples116_CorConstants_difflevels_df
+colnames(tmpcolors) <- colsrow[1:ncol(tmpcolors)]
+tmpcolors <- stack(tmpcolors)
+samples116_CorConstants_difflevels_df <- stack(samples116_CorConstants_difflevels_df)
+colnames(samples116_CorConstants_difflevels_df) <- c("Value", "Levels")
+colnames(tmpcolors) <- c("Value", "Colors")
+
+df.summary <- samples116_CorConstants_difflevels_df %>%
+  group_by(Levels) %>%
+  summarise(
+    sd = sd(Value, na.rm = TRUE),
+    Value = mean(Value),
+  )
+
+outilfename <- paste("All Correlation Constants at six levles", ".pdf", sep = "")
+CairoPDF(file = outilfename, width = 10, height = 10)
+boxplots <- ggplot(samples116_CorConstants_difflevels_df, aes(Levels, Value)) +
+  geom_jitter(position = position_jitter(0.2), color = tmpcolors$Colors) +
+  geom_line(aes(group = 1), data = df.summary, linetype = 2) +
+  geom_errorbar(aes(ymin = Value - sd, ymax = Value + sd), data = df.summary, width = 0.2) +
+  geom_point(data = df.summary, size = 4, shape = 8, fill = "red") +
+  theme(plot.title = element_text(size = 10), text = element_text(size = 16, family = "TT Times New Roman"), axis.text = element_text(size = 18), axis.title = element_text(size = 18, face = "bold"))
+par(mfcol = c(1, 1))
+print(boxplots)
+dev.off()
+save.image()
+
+```
+<p align=center>
+<img src="https://s3.ax1x.com/2021/01/26/sXAFr6.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+<img src="https://s3.ax1x.com/2021/01/26/sXAiKx.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+</p>
 
 第二部分 Functions.r 是主要的收集物种信息和绘图的函数的脚本：
 

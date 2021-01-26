@@ -18,8 +18,8 @@ tags:
 🧔</p>
 <pre class="r"><code># Script name: work.r
 #加载函数脚本
-source(&quot;~/NameChecked/Functions.R&quot;)
-
+source(&quot;~/Functions.R&quot;)
+# 读取Excel表格中的原始数据文件
 excelfile&lt;-&quot;~/PacBiovsMiseq.xlsx&quot;
 
 Pb_exc1 &lt;- read_excel(excelfile, sheet = 1)
@@ -31,7 +31,7 @@ pb_taxoinfo_output &lt;- get_ncbi_taxonamy(taxolist = Pb_exc1$Taxon)
 #miseq_taxopasered &lt;- miseq_taxo_paser(taxo_levels_list = Ms_exc1$Taxo)
 miseq_taxopasered &lt;- miseq_taxo_paser2(taxo_levels_list = Ms_exc1$Taxon)
 mq_taxoinfo_output &lt;- get_ncbi_taxonamy(taxolist = miseq_taxopasered)
-save.image()
+save.image()  #保存镜像数据
 
 pb_taxo &lt;- pb_taxoinfo_output[[1]]
 mq_taxo &lt;- mq_taxoinfo_output[[1]]
@@ -42,10 +42,14 @@ mq_unkown &lt;- mq_taxoinfo_output[[2]]
 ## 01 绘制指定水平的物种鉴定 Venn 图
 get_venn_diagram(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels)
 
-
 ## 02 获取不同水平的物种交差集( Venn )信息
 taxo_venn_at_diff_level &lt;- get_venn_info(pb_taxo, mq_taxo, complevel = taxo_levels[1:6], taxo_levels = taxo_levels)
-
+</code></pre>
+<p align="center">
+<img src="https://s3.ax1x.com/2021/01/26/sXiZ5j.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+</p>
+<pre class="r"><code>
 ## 03 将与NCBI taxonomy 统一后的分类信息与丰度表格进行整合得到 OTU_Table和 Taxo mapping数据对象，以及根据NCBI taxonomy 信息将
 # 两种平台的样本数据合并（注意不是将相同OPU/OTU/Taxo的值相加），主要是将样本信息合并在一张表，合成一个包含所有taxonomy在两个平台中的丰度
 
@@ -132,9 +136,14 @@ heat_tree(merged_taxo_parsed,
           node_color_axis_label = &quot;Samples with reads&quot;,
           layout = &quot;davidson-harel&quot;, # The primary layout algorithm
           initial_layout = &quot;reingold-tilford&quot;,
-          output_file = &quot;merged_taxo_parsed4MiSeq.pdf&quot;)
-
-##05 计算各个样品数据的相对丰度obs_props 和 各个物种的丰度tax_abund，各个taxo在各组样本中出现的样本数n_samples
+          output_file = &quot;merged_taxo_parsed4MiSeq.pdf&quot;)</code></pre>
+<p align="center">
+<img src="https://s3.ax1x.com/2021/01/26/sXibJs.png" 
+width="50%"  alt="Multi-input and multi-output models" >
+<img src="https://s3.ax1x.com/2021/01/26/sXVva8.png" 
+width="50%"  alt="Multi-input and multi-output models" >
+</p>
+<pre class="r"><code>##05 计算各个样品数据的相对丰度obs_props 和 各个物种的丰度tax_abund，各个taxo在各组样本中出现的样本数n_samples
 merged_taxo_parsed$data$obs_props &lt;- calc_obs_props(merged_taxo_parsed, &quot;tax_data&quot;)
 merged_taxo_parsed$data$tax_abund &lt;- calc_taxon_abund(merged_taxo_parsed, &quot;tax_data&quot;)
 merged_taxo_parsed$data$n_samples &lt;- calc_n_samples(merged_taxo_parsed, data = &quot;tax_data&quot;)
@@ -227,6 +236,63 @@ par(mfcol = c(11, 11))
 plot_grid(plotlist = figs_list)
 dev.off()
 </code></pre>
+<p align="center">
+<img src="https://s3.ax1x.com/2021/01/26/sXkAhj.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+<img src="https://s3.ax1x.com/2021/01/26/sXkkNQ.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+</p>
+<pre class="r"><code>##08 绘制116样本在KPCOFG水平的correlaton constants 柱形图
+samples116_CorConstants_difflevels &lt;- list()
+for (ele in names(colors_diff_levels)) {
+  temp_comsamp_tax_props &lt;- merged_taxo_parsed$data$comsamp_tax_props[which(colorssets == ele),]
+  basestpe = length(common_samples_id) / 2
+  tmp_figs_list &lt;- list()
+  for (i in 2:(basestpe + 1)) {
+    pb_tmpX &lt;- as.numeric(unlist(temp_comsamp_tax_props[, i]))
+    mq_tmpy &lt;- as.numeric(unlist(temp_comsamp_tax_props[, i + basestpe]))
+    lm_val &lt;- lm(mq_tmpy ~ pb_tmpX)
+    corConstant &lt;- lm_val$coefficients[2]
+    tmp_figs_list[[length(tmp_figs_list) + 1]] &lt;- corConstant
+    #print(main)
+  }
+  samples116_CorConstants_difflevels[[length(samples116_CorConstants_difflevels) + 1]] &lt;- tmp_figs_list
+}
+samples116_CorConstants_difflevels_df &lt;- as.data.frame(matrix(unlist(samples116_CorConstants_difflevels), nrow = length(unlist(samples116_CorConstants_difflevels[1]))))
+colnames(samples116_CorConstants_difflevels_df) &lt;- taxo_levels[1:ncol(samples116_CorConstants_difflevels_df)]
+tmpcolors &lt;- samples116_CorConstants_difflevels_df
+colnames(tmpcolors) &lt;- colsrow[1:ncol(tmpcolors)]
+tmpcolors &lt;- stack(tmpcolors)
+samples116_CorConstants_difflevels_df &lt;- stack(samples116_CorConstants_difflevels_df)
+colnames(samples116_CorConstants_difflevels_df) &lt;- c(&quot;Value&quot;, &quot;Levels&quot;)
+colnames(tmpcolors) &lt;- c(&quot;Value&quot;, &quot;Colors&quot;)
+
+df.summary &lt;- samples116_CorConstants_difflevels_df %&gt;%
+  group_by(Levels) %&gt;%
+  summarise(
+    sd = sd(Value, na.rm = TRUE),
+    Value = mean(Value),
+  )
+
+outilfename &lt;- paste(&quot;All Correlation Constants at six levles&quot;, &quot;.pdf&quot;, sep = &quot;&quot;)
+CairoPDF(file = outilfename, width = 10, height = 10)
+boxplots &lt;- ggplot(samples116_CorConstants_difflevels_df, aes(Levels, Value)) +
+  geom_jitter(position = position_jitter(0.2), color = tmpcolors$Colors) +
+  geom_line(aes(group = 1), data = df.summary, linetype = 2) +
+  geom_errorbar(aes(ymin = Value - sd, ymax = Value + sd), data = df.summary, width = 0.2) +
+  geom_point(data = df.summary, size = 4, shape = 8, fill = &quot;red&quot;) +
+  theme(plot.title = element_text(size = 10), text = element_text(size = 16, family = &quot;TT Times New Roman&quot;), axis.text = element_text(size = 18), axis.title = element_text(size = 18, face = &quot;bold&quot;))
+par(mfcol = c(1, 1))
+print(boxplots)
+dev.off()
+save.image()
+</code></pre>
+<p align="center">
+<img src="https://s3.ax1x.com/2021/01/26/sXAFr6.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+<img src="https://s3.ax1x.com/2021/01/26/sXAiKx.png" 
+width="40%"  alt="Multi-input and multi-output models" >
+</p>
 <p>第二部分 Functions.r 是主要的收集物种信息和绘图的函数的脚本：</p>
 <pre class="r"><code>library(&#39;readxl&#39;)
 library(&#39;taxonomizr&#39;)
