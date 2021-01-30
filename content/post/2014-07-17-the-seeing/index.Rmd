@@ -8,14 +8,15 @@ categories:
   - Read
 tags:
   - reading
+cover-image: images/img_the_seeing.jpg
+output:
+  blogdown::html_page:
+    css: test.css
 ---
 
-<div style= "float:right; position: relative; top: 5px; width:160px;height:300px">
- <img src="images/img_the_seeing.jpg" align="right" width="100%" hspace="3" vspace="5" /><br />
- <p align="center">*《看见》-- 柴静*</p>
-</div>
 
 
+<a href="http://amzn.to/2aHLAQ1"><img src="images/img_the_seeing.jpg" width="150" height="200" alt="Buy from amazon" class="cover" /></a> 
 
 最近又温读了一遍《看见》，正如“温故而知新”所意，总能从字里行间，章落情节中感受到以前似乎没有的感触，用“似乎”是因为可能以前看了的触动，却在中间的生活中忘却了，当然很可能是最初的感触无法 “深切体会” 的原因吧. 
 
@@ -27,7 +28,7 @@ tags:
 
 北京发家的NG，虽然自诞生之时便于就具有浓厚的 博大 血统，是博大遍地花中的一朵，但是现在已成为行业中的众多后起之秀的佼佼者，尤其这两年发展和扩张势头非常迅猛。
 
-这中间也有幸到国内医药临检方向不做的BRHK短期呆过；一段时间里也投入的了解过，部分参与到上海朋友的创业(https://www.logicinformatics.com/)，这是我唯一知道没有 博大 血统的公司，。
+这中间也有幸到国内医药临检方向不做的BRHK短期呆过；一段时间里也投入的了解过，部分参与到上海朋友的创业，这是我唯一知道没有 博大 血统的公司，。
 
 在这些时间里，很多东西节奏快的难以消化，对我自己来讲，但是工作上的还算比较多样分丰富的经历，并不是我个人喜欢跳槽，喜欢折腾，我个人倒是挺钟情于一份待遇与之匹配的终生聘用的方式。每个折腾的都有各自的原因，有触手可及的机会，有朋友扬帆起航时候的助推需要，有不丢失的骄傲任性，有“委屈”，有"辛酸"，有“不羁”的爱自由...哈哈...种种原因哒...需要适当消化，转化，再积累它样的的东西...
 
